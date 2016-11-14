@@ -32,6 +32,20 @@ class masterGUI:
         self.btLogin.grid(row = 3, column = 1, sticky=W)
 
 
+class studentRegistration:
+
+    def __init__(self, win):
+        self.win = win
+
+        self.lbTitle = Label(self.win, text = "Student Register")
+        self.lbTitle.grid(row = 0, column = 0, columnspan = 2)
+
+        self.lbUsername = Label
+
+
+
+
+
 
 
 win = Tk()

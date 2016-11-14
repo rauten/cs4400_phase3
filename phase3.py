@@ -1,6 +1,8 @@
-from Tkinter import *
+from tkinter import *
 import re
 import string
+import pymysql
+
 
 class masterGUI:
 
@@ -28,27 +30,18 @@ class masterGUI:
         #Initialize buttons
         self.btRegister = Button(self.win, width = 5, text = "Register")
         self.btRegister.grid(row = 3, column = 1, sticky=E)
-        self.btLogin = Button(self.win, width = 5, text = "Login")
+        self.btLogin = Button(self.win, width = 5, text = "Login", command = self.LoginCheck)
         self.btLogin.grid(row = 3, column = 1, sticky=W)
 
-class mainPage:
+    #def LoginCheck(self):
+        #self.db2 = self.Connect()
 
-    def __init__(self, mainWin):
+        #self.userLogin = self.
+    
         
 
-
-class studentRegistration:
-
-    def __init__(self, win):
-        self.win = win
-
-        self.lbTitle = Label(self.win, text = "Student Register")
-        self.lbTitle.grid(row = 0, column = 0, columnspan = 2)
-
-        self.lbUsername = Label
-
-
-
+        
+        
 
 
 

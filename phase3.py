@@ -31,6 +31,11 @@ class masterGUI:
         self.btLogin = Button(self.win, width = 5, text = "Login")
         self.btLogin.grid(row = 3, column = 1, sticky=W)
 
+class mainPage:
+
+    def __init__(self, mainWin):
+        
+
 
 class studentRegistration:
 

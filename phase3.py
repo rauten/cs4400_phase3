@@ -40,7 +40,7 @@ class studentRegistration:
         self.lbTitle = Label(self.win, text = "Student Register")
         self.lbTitle.grid(row = 0, column = 0, columnspan = 2)
 
-        self.lbUsername = Label
+        self.lbUsername = Label(row = 0)
 
 
 

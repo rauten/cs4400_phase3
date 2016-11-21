@@ -42,9 +42,24 @@ class masterGUI:
     #def LoginCheck(self):
         #self.db2 = self.Connect()
 
+<<<<<<< HEAD
         #self.userLogin = self.
 #Neeltest    
         
+=======
+class studentRegistration:
+
+    def __init__(self, win):
+        self.win = win
+
+        self.lbTitle = Label(self.win, text = "Student Register")
+        self.lbTitle.grid(row = 0, column = 0, columnspan = 2)
+
+        self.lbUsername = Label(row = 0)
+        self.stuff
+
+
+>>>>>>> refs/remotes/origin/rauten
 
         
         

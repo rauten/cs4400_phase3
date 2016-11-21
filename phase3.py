@@ -36,30 +36,26 @@ class masterGUI:
         #Initialize buttons
         self.btRegister = Button(self.win, width = 5, text = "Register")
         self.btRegister.grid(row = 3, column = 1, sticky=E)
-        self.btLogin = Button(self.win, width = 5, text = "Login", command = self.LoginCheck)
+        self.btLogin = Button(self.win, width = 5, text = "Login") #command = self.LoginCheck)
         self.btLogin.grid(row = 3, column = 1, sticky=W)
+  
 
-    #def LoginCheck(self):
-        #self.db2 = self.Connect()
+    def Connect(self):
+        try:
+            self.db = pymysql.connect(host="acacdemic-mysql.cc.gatech.edu",passwd="Z8IHtiyg",user="cs4400_Team_9",db="cs4400_Team_9")
+        except:
+            messagebox.showinfo("Connection error. Check your Internet Connection and/or code!")
+    def LoginCheck(self):
+        self.db2 = self.Connect()
 
-<<<<<<< HEAD
-        #self.userLogin = self.
-#Neeltest    
-        
-=======
-class studentRegistration:
+        self.userLogin = self.usernameEntry.get()
+        self.passLogin = self.passwordEntry.get()
 
-    def __init__(self, win):
-        self.win = win
-
-        self.lbTitle = Label(self.win, text = "Student Register")
-        self.lbTitle.grid(row = 0, column = 0, columnspan = 2)
-
-        self.lbUsername = Label(row = 0)
-        self.stuff
+        try:
+            self.cursor = self.db2.cursor()
+            self.sql = "SELECT * FROM 
 
 
->>>>>>> refs/remotes/origin/rauten
 
         
         

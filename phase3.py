@@ -34,9 +34,9 @@ class masterGUI:
         self.passwordEntry.grid(row = 2, column = 1, padx = 5, pady = 5)
 
         #Initialize buttons
-        self.btRegister = Button(self.win, width = 5, text = "Register")
+        self.btRegister = Button(self.win, width = 5, text = "Register") #command = self.registerOpen
         self.btRegister.grid(row = 3, column = 1, sticky=E)
-        self.btLogin = Button(self.win, width = 5, text = "Login") #command = self.LoginCheck)
+        self.btLogin = Button(self.win, width = 5, text = "Login", command = self.LoginCheck)
         self.btLogin.grid(row = 3, column = 1, sticky=W)
   
 
@@ -45,6 +45,14 @@ class masterGUI:
             self.db = pymysql.connect(host="acacdemic-mysql.cc.gatech.edu",passwd="Z8IHtiyg",user="cs4400_Team_9",db="cs4400_Team_9")
         except:
             messagebox.showinfo("Connection error. Check your Internet Connection and/or code!")
+
+
+    def registerOpen(self):
+        self.win.withdraw()
+        self.RegisterPage()
+
+    def RegisterPage(self):
+
     def LoginCheck(self):
         self.db2 = self.Connect()
 
@@ -53,10 +61,16 @@ class masterGUI:
 
         try:
             self.cursor = self.db2.cursor()
-            self.sql = "SELECT * FROM 
-
-
-
+            self.sql = "SELECT * FROM cs4400_Team_9 WHERE Username = %s AND Password = %s"
+            info = self.cursor.execute(self.sql,(self.userLogin, self.passLogin))
+            if info == 1:
+                messagebox.showinfo("Congrats! You logged in successfully!")
+                self.win.destroy()
+            else:
+                messagebox.showinfo("Sorry! Your username and password combo was invalid")
+        except:
+            print("Error, try new login!")
+        
         
         
 

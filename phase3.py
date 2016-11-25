@@ -54,6 +54,20 @@ class masterGUI:
     def RegisterPage(self):
         self.registerPage = Toplevel()
         self.registerPage.title("New Student Registration")
+        self.bigFrame = Frame(self.registerPage)
+        self.bigFrame.grid(row=1, column=0)
+        self.smallFrame = Frame(self.bigFrame)
+        self.smallFrame.grid(row=0, column=0)
+
+        self.usernameReg = Entry(self.smallFrame, width=60)
+        self.usernameReg.grid(row=0, column=1, sticky=E, pady=5)
+        f1 = Label(self.smallFrame, text="Username:")
+        f1.grid(row=0, column=0, sticky=E, padx=5, pady=5)
+        f2 = Label(self.smallFrame, text="GT Email Address")
+        f2.grid(row=1, column=0, sticky=E, padx=5, pady=5)
+        self.email = Entry(self.smallFrame, width=60)
+        self.email.grid(row=1, column=1, sticky=E, pady=5)
+        
         
 
     def LoginCheck(self):

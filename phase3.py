@@ -52,6 +52,9 @@ class masterGUI:
         self.RegisterPage()
 
     def RegisterPage(self):
+        self.registerPage = Toplevel()
+        self.registerPage.title("New Student Registration")
+        
 
     def LoginCheck(self):
         self.db2 = self.Connect()
@@ -61,15 +64,17 @@ class masterGUI:
 
         try:
             self.cursor = self.db2.cursor()
-            self.sql = "SELECT * FROM cs4400_Team_9 WHERE Username = %s AND Password = %s"
+            self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
             info = self.cursor.execute(self.sql,(self.userLogin, self.passLogin))
-            if info == 1:
-                messagebox.showinfo("Congrats! You logged in successfully!")
-                self.win.destroy()
+            info2 = self.cursor.fetchall()
+            if len(info2==0):
+                messagebox.showwarning("Error! Data entered not registered username/password combination.")
             else:
-                messagebox.showinfo("Sorry! Your username and password combo was invalid")
+                messagebox.showwarning("Success! Login Successful!")
+                self.win.withdraw()
+                #self.someFunction
         except:
-            print("Error, try new login!")
+            print("Error, try new login! Invalid username/password combo.")
         
         
         

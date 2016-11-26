@@ -34,9 +34,9 @@ class masterGUI:
         self.passwordEntry.grid(row = 2, column = 1, padx = 5, pady = 5)
 
         #Initialize buttons
-        self.btRegister = Button(self.win, width = 5, text = "Register") #command = self.registerOpen
+        self.btRegister = Button(self.win, width = 5, text = "Register", padx=5, pady=5, command = self.registerOpen)
         self.btRegister.grid(row = 3, column = 1, sticky=E)
-        self.btLogin = Button(self.win, width = 5, text = "Login", command = self.LoginCheck)
+        self.btLogin = Button(self.win, width = 5, padx=5, pady=5, text = "Login", command = self.LoginCheck)
         self.btLogin.grid(row = 3, column = 1, sticky=W)
   
 
@@ -59,14 +59,16 @@ class masterGUI:
         self.smallFrame = Frame(self.bigFrame)
         self.smallFrame.grid(row=0, column=0)
 
+        self.titleReg = Label(self.smallFrame,text="New Student Registration", width=30, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
+        self.titleReg.grid(row=0, column=1)
         self.usernameReg = Entry(self.smallFrame, width=60)
-        self.usernameReg.grid(row=0, column=1, sticky=E, pady=5)
+        self.usernameReg.grid(row=1, column=1, sticky=E, pady=5)
         f1 = Label(self.smallFrame, text="Username:")
-        f1.grid(row=0, column=0, sticky=E, padx=5, pady=5)
+        f1.grid(row=1, column=0, sticky=E, padx=5, pady=5)
         f2 = Label(self.smallFrame, text="GT Email Address")
-        f2.grid(row=1, column=0, sticky=E, padx=5, pady=5)
+        f2.grid(row=2, column=0, sticky=E, padx=5, pady=5)
         self.email = Entry(self.smallFrame, width=60)
-        self.email.grid(row=1, column=1, sticky=E, pady=5)
+        self.email.grid(row=2, column=1, sticky=E, pady=5)
         
         
 

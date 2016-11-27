@@ -53,7 +53,7 @@ class masterGUI:
 
     def RegisterPage(self):
         self.registerPage = Toplevel()
-        self.registerPage.title("New Student Registration")
+
         self.bigFrame = Frame(self.registerPage)
         self.bigFrame.grid(row=1, column=0)
         self.smallFrame = Frame(self.bigFrame)
@@ -61,15 +61,34 @@ class masterGUI:
 
         self.titleReg = Label(self.smallFrame,text="New Student Registration", width=30, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
         self.titleReg.grid(row=0, column=1)
-        self.usernameReg = Entry(self.smallFrame, width=60)
+        self.usernameReg = Entry(self.smallFrame, width=50)
         self.usernameReg.grid(row=1, column=1, sticky=E, pady=5)
         f1 = Label(self.smallFrame, text="Username:")
         f1.grid(row=1, column=0, sticky=E, padx=5, pady=5)
-        f2 = Label(self.smallFrame, text="GT Email Address")
+        f2 = Label(self.smallFrame, text="GT Email Address:")
         f2.grid(row=2, column=0, sticky=E, padx=5, pady=5)
-        self.email = Entry(self.smallFrame, width=60)
+        self.email = Entry(self.smallFrame, width=50)
         self.email.grid(row=2, column=1, sticky=E, pady=5)
+        f3 = Label(self.smallFrame, text="Password:")
+        f3.grid(row=3, column=0, sticky=E, padx=5, pady=5)
+        self.passwordReg = Entry(self.smallFrame, width=50)
+        self.passwordReg.grid(row=3, column=1, sticky=E, pady=5)
+        f4 = Label(self.smallFrame, text="Confirm Password:")
+        f4.grid(row=4, column=0, sticky=E, padx=5, pady=5)
+        self.cp = Entry(self.smallFrame, width=50)
+        self.cp.grid(row=4, column=1, sticky=E, pady=5)
+
+        regButton = Button(self.bigFrame, text="Create", width=10, bg="white") #command = self.RegisterNew
+        regButton.grid(row=7, column=0)
+
+
         
+    def RegisterNew(self):
+        self.Connect()
+        self.sql = "SELECT Username,Password FROM USER"
+
+        self.cursorA.execute(self.sql)
+        information = self.cursor.fetchall()
         
 
     def LoginCheck(self):

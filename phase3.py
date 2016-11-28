@@ -81,17 +81,7 @@ class masterGUI:
         regButton = Button(self.bigFrame, text="Create", width=10, bg="white") #command = self.RegisterNew
         regButton.grid(row=7, column=0)
 
-    def MainPage(self):
-        self.mainpage = Toplevel()
-        self.bigFrame = Frame(self.mainPage)
-        self.bigFrame.grid(row=1, column=0)
-        self.smallFrame = Frame(self.bigFrame)
-        self.smallFrame.grid(row=0, column=0)
-
-        self.titleReg = Label(self.smallFrame,text="Main Page", width=30, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
-        self.titleReg.grid(row=0, column=1)
-        self.usernameReg = Entry(self.smallFrame, width=50)
-
+    
     def RegisterNew(self):
         self.Connect()
         self.sql = "SELECT Username,Password FROM USER"
@@ -121,6 +111,16 @@ class masterGUI:
             print("Error, try new login! Invalid username/password combo.")
 
 
+    def MainPage(self):
+        self.mainpage = Toplevel()
+        self.bigFrame = Frame(self.mainPage)
+        self.bigFrame.grid(row=1, column=0)
+        self.smallFrame = Frame(self.bigFrame)
+        self.smallFrame.grid(row=0, column=0)
+
+        self.titleReg = Label(self.smallFrame,text="Main Page", width=30, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
+        self.titleReg.grid(row=0, column=1)
+        self.usernameReg = Entry(self.smallFrame, width=50)
 
 
 

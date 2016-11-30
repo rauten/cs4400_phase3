@@ -1,4 +1,9 @@
 from tkinter import *
+
+from tkinter import messagebox
+from tkinter import ttk
+
+
 import re
 import string
 import pymysql
@@ -13,6 +18,7 @@ import random
 class masterGUI:
 
     def __init__(self, win):
+
 
         #Setup
         self.win = win
@@ -34,10 +40,12 @@ class masterGUI:
         self.passwordEntry.grid(row = 2, column = 1, padx = 5, pady = 5)
 
         #Initialize buttons
-        self.btRegister = Button(self.win, width = 5, text = "Register", padx=5, pady=5, command = self.registerOpen)
+        self.btRegister = Button(self.win, width = 10, text = "Register", padx=5, pady=5, command = self.registerOpen)
         self.btRegister.grid(row = 3, column = 1, sticky=E)
         self.btLogin = Button(self.win, width = 5, padx=5, pady=5, text = "Login", command = self.LoginCheck)
         self.btLogin.grid(row = 3, column = 1, sticky=W)
+
+
 
 
     def Connect(self):
@@ -101,26 +109,88 @@ class masterGUI:
             self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
             info = self.cursor.execute(self.sql,(self.userLogin, self.passLogin))
             info2 = self.cursor.fetchall()
-            if len(info2==0):
+            if len(info2 == 0):
                 messagebox.showwarning("Error! Data entered not registered username/password combination.")
             else:
                 messagebox.showwarning("Success! Login Successful!")
                 self.win.withdraw()
+                self.mainPageOpen() #Open the main page
                 #self.someFunction
         except:
             print("Error, try new login! Invalid username/password combo.")
 
+    def mainPageOpen(self):
+        self.win.withdraw()
+        self.MainPage()
+
 
     def MainPage(self):
-        self.mainpage = Toplevel()
+        self.mainPage = Toplevel()
+
         self.bigFrame = Frame(self.mainPage)
         self.bigFrame.grid(row=1, column=0)
         self.smallFrame = Frame(self.bigFrame)
         self.smallFrame.grid(row=0, column=0)
 
-        self.titleReg = Label(self.smallFrame,text="Main Page", width=30, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
+        self.titleReg = Label(self.smallFrame, text="Main Page", width=30, padx=5, pady=5, fg="blue",
+                              font=("Helvetica", 16))
         self.titleReg.grid(row=0, column=1)
-        self.usernameReg = Entry(self.smallFrame, width=50)
+
+        self.title = Entry(self.smallFrame, width=30)
+        self.title.grid(row=1, column=1, sticky=W)
+        titleLB = Label(self.smallFrame, text="Title")
+        titleLB.grid(row=1, column=0, sticky=W, padx=5, pady=5)
+
+        # CATEGORY SELECTION
+        choiceVarOne = StringVar()
+        choiceVarOne.set("Please Select")
+        self.category = OptionMenu(self.smallFrame, choiceVarOne, "Computing for good",
+                                   "Doing good for your neighborhood", "Reciprocal teaching and learning",
+                                   "Urban development", "Adaptive learning")
+
+        self.category.config(width=25)  # Allow the user to see everything
+        self.category.grid(row=1, column=3, sticky=W, padx=5)
+        categoryLB = Label(self.smallFrame, text="Category")
+        categoryLB.grid(row=1, column=2, sticky=W, padx=5)
+
+        # DESIGNATION SELECTION
+        choiceVar = StringVar()
+        choiceVar.set("Please Select")
+        self.designation = OptionMenu(self.smallFrame, choiceVar, "Sustainable Communities", "Community")
+        self.designation.grid(row=2, column=1, sticky=W)
+        designationLB = Label(self.smallFrame, text="Designation")
+        designationLB.grid(row=2, column=0, sticky=W, padx=5)
+
+        # MAJOR SELECTION
+        choiceVarTwo = StringVar()
+        choiceVarTwo.set("Please Select")
+        self.major = OptionMenu(self.smallFrame, choiceVarTwo, "Computer Science", "Mechanical Engineering",
+                                "Chemical Engineering")  # Can add more major options here if necessary
+
+        self.major.grid(row=3, column=1, sticky=W)
+        majorLB = Label(self.smallFrame, text="Major")
+        majorLB.grid(row=3, column=0, sticky=W, padx=5)
+
+        # MAJOR SELECTION
+        choiceVarThree = StringVar()
+        choiceVarThree.set("Please Select")
+        self.major = OptionMenu(self.smallFrame, choiceVarThree, "Freshman", "Sophomore", "Junior", "Senior")
+        self.major.grid(row=4, column=1, sticky=W)
+        majorLB = Label(self.smallFrame, text="Year")
+        majorLB.grid(row=4, column=0, sticky=W, padx=5, pady=30)
+
+        # PROJECT/COURSE SELECTION
+        # self.projCourse = Radiobutton(self.smallFrame, text = "Project").pack(side=LEFT)
+        # self.projCourse = Radiobutton(self.smallFrame, text = "Course").pack(side = LEFT)
+        # self.projCourse = Radiobutton(self.smallFrame, text = "Both").pack(side = LEFT)
+
+        # self.table = ttk.Treeview(self)
+        self.table = ttk.Treeview(self.smallFrame, height=15, columns=("Name"), selectmode="extended")
+        self.table.grid(row=5, column=0, sticky=W, columnspan=5)
+        self.table.heading('#0', text="Name")
+        self.table.heading('#1', text="Type")
+        self.table.column('#0', stretch=tkinter.YES)
+        self.table.column('#1', stretch=tkinter.YES)
 
 
 

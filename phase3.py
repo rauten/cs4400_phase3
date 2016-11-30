@@ -47,7 +47,6 @@ class masterGUI:
 
 
 
-
     def Connect(self):
         try:
             self.db = pymysql.connect(host="acacdemic-mysql.cc.gatech.edu",passwd="Z8IHtiyg",user="cs4400_Team_9",db="cs4400_Team_9")
@@ -191,6 +190,22 @@ class masterGUI:
         self.table.heading('#1', text="Type")
         self.table.column('#0', stretch=tkinter.YES)
         self.table.column('#1', stretch=tkinter.YES)
+
+    def openMe(self):
+        self.win.withdraw()
+        self.MePage()
+
+    def MePage(self):
+        self.titleLb = Label(self.win, text="Me")
+        self.titleLb.grid(row=0, column=2, columnspan=2, padx=150, sticky=N)
+        self.editProfileBtn = Button(self.win, width=1, text="Edit Profile", padx=80,
+                                     pady=20)  # Must insert a command here
+        self.editProfileBtn.grid(row=1, column=2, sticky=E)
+        self.myAppBtn = Button(self.win, width=1, text="My Application", padx=80,
+                               pady=50)  # Also need a command functionality here
+        self.myAppBtn.grid(row=2, column=2, sticky=E)
+        self.backBtn = Button(self.win, width=1, text="Back", padx=80)  # Need a command here as well
+        self.backBtn.grid(row=3, column=2, stick=E)
 
 
 

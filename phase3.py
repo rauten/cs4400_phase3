@@ -22,7 +22,6 @@ class masterGUI:
     def __init__(self, win):
         # Setup
         self.win = win
-        self.MainPage()
 
         # Titles
         self.label1 = Label(self.win, text = "Login")
@@ -54,7 +53,7 @@ class masterGUI:
 
     def Connect(self):
         try:
-            self.db = pymysql.connect(host="acacdemic-mysql.cc.gatech.edu",passwd="Z8IHtiyg",user="cs4400_Team_9",db="cs4400_Team_9")
+            self.db = pymysql.connect(host="academic-mysql.cc.gatech.edu",passwd="Z8IHtiyg",user="cs4400_Team_9",db="cs4400_Team_9")
         except:
             messagebox.showinfo("Connection error. Check your Internet Connection and/or code!")
 
@@ -86,48 +85,47 @@ class masterGUI:
         self.confirmPassword = Entry(self.smallFrame, width=50)
         self.confirmPassword.grid(row=4, column=1, sticky=E, pady=5)
 
-        regButton = Button(self.bigFrame, text="Create", width=10, bg="white", command = self.registerNew(self.usernameReg))
+        regButton = Button(self.bigFrame, text="Create", width=10, bg="white", command = self.registerNew)
         regButton.grid(row=7, column=0)
 
     
-    def registerNew(self, username): #Pass in username
-        self.db = self.Connect()
+    def registerNew(self): #Pass in username
+        self.Connect()
         self.cursor = self.db.cursor()
-        self.SQL_RegisterCheck = "SELECT Username FROM USER WHERE Username = %s", (username)
-        existUser = self.cursor.execute(self.SQL_RegisterCheck)
+        self.SQL_RegisterCheck = "SELECT Username FROM USER WHERE Username = %s"
+        existUser = self.cursor.execute(self.SQL_RegisterCheck,(self.usernameEntry.get()))
+        print(existUser)
 
         if self.confirmPassword.get() != self.passwordReg.get() :
             messagebox.showwarning("Error", "Passwords do not match")
-        elif username == "":
+        elif self.usernameReg.get() == "":
             messagebox.showwarning("Error", "Please enter a username")
         elif self.passwordReg.get() == "" :
             messagebox.showwarning("Error", "Please enter a password")
         elif existUser > 0:
             messagebox.showwarning("Error", "Username already exists!")
         else:
-            self.SQL_RegisterUser = "INSERT INTO STUDENT (Username, GT_Email, Password) VALUES (%s, %s, %s)", (self.passwordReg.get(), self.email.get(), self.passwordReg.get())
-            self.cursor.execute(self.SQL_RegisterUser)
-            self.mainPageOpen()
+            self.SQL_RegisterUser = "INSERT INTO STUDENT (Username, GT_Email, Password) VALUES (%s, %s, %s)"
+            self.cursor.execute(self.SQL_RegisterUser, (self.usernameReg.get(), self.email.get(), self.passwordReg.get()))
+            self.mainPageOpen() #Change this to login page
 
 
     def loginCheck(self):
-        self.db2 = self.Connect()
+        self.Connect()
 
         self.userLogin = self.usernameEntry.get()
         self.passLogin = self.passwordEntry.get()
 
-        try:
-            self.cursor = self.db2.cursor()
-            self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
-            info = self.cursor.execute(self.sql, (self.userLogin, self.passLogin))
-            info2 = self.cursor.fetchall()
-            if len(info2 == 0):
-                messagebox.showwarning("Error! Data entered not registered username/password combination.")
-            else:
-                messagebox.showwarning("Success! Login Successful!")
-                self.mainPageOpen() #Open the main page
-        except:
-            print("Error, try new login! Invalid username/password combo.")
+        self.cursor = self.db.cursor()
+        self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
+        info = self.cursor.execute(self.sql, (self.userLogin, self.passLogin))
+        print(info)
+            #info2 = self.cursor.fetchall()
+        if info == 0:
+            messagebox.showwarning("Error! Data entered not registered username/password combination.")
+        else:
+            messagebox.showwarning("Success! Login Successful!")
+            self.mainPageOpen() #Open the main page
 
     def mainPageOpen(self):
         self.win.withdraw()
@@ -152,37 +150,41 @@ class masterGUI:
         titleLB.grid(row=1, column=0, sticky=W, padx=5, pady=5)
 
         # CATEGORY SELECTION
+        self.categoryFilter = ""
         self.choiceVarOne = StringVar()
         self.choiceVarOne.set("Please Select")
         self.category = OptionMenu(self.smallFrame, self.choiceVarOne, "Computing for good",
                                    "Doing good for your neighborhood", "Reciprocal teaching and learning",
-                                   "Urban development", "Adaptive learning")
+                                   "Urban development", "Adaptive learning", command=self.updateCategory)
         self.category.config(width=25)  # Allow the user to see everything
         self.category.grid(row=1, column=3, sticky=W, padx=5)
         categoryLB = Label(self.smallFrame, text="Category")
         categoryLB.grid(row=1, column=2, sticky=W, padx=5)
 
         # DESIGNATION SELECTION
+        self.designationFilter = ""
         self.choiceVar = StringVar()
         self.choiceVar.set("Please Select")
-        self.designation = OptionMenu(self.smallFrame, self.choiceVar, "Sustainable Communities", "Community")
+        self.designation = OptionMenu(self.smallFrame, self.choiceVar, "Sustainable Communities", "Community", command=self.updateDesignation)
         self.designation.grid(row=2, column=1, sticky=W)
         designationLB = Label(self.smallFrame, text="Designation")
         designationLB.grid(row=2, column=0, sticky=W, padx=5)
 
         # MAJOR SELECTION
+        self.majorFilter = ""
         self.choiceVarTwo = StringVar()
         self.choiceVarTwo.set("Please Select")
         self.major = OptionMenu(self.smallFrame, self.choiceVarTwo, "Computer Science", "Mechanical Engineering",
-                                "Chemical Engineering")  # Can add more major options here if necessary
+                                "Chemical Engineering", command=self.updateMajor)  # Can add more major options here if necessary
         self.major.grid(row=3, column=1, sticky=W)
         majorLB = Label(self.smallFrame, text="Major")
         majorLB.grid(row=3, column=0, sticky=W, padx=5)
 
         # MAJOR SELECTION
+        self.yearFilter = ""
         self.choiceVarThree = StringVar()
         self.choiceVarThree.set("Please Select")
-        self.year = OptionMenu(self.smallFrame, self.choiceVarThree, "Freshman", "Sophomore", "Junior", "Senior")
+        self.year = OptionMenu(self.smallFrame, self.choiceVarThree, "Freshman", "Sophomore", "Junior", "Senior", command = self.updateYear)
         self.year.grid(row=4, column=1, sticky=W)
         yearLB = Label(self.smallFrame, text="Year")
         yearLB.grid(row=4, column=0, sticky=W, padx=5, pady=30)
@@ -211,55 +213,85 @@ class masterGUI:
         self.resetFilterBtn = Button(self.smallFrame, width=10, text="Reset Filter", command=self.clearFilter)
         self.resetFilterBtn.grid(row=5, column=3, sticky=E)
 
+    def updateYear(self, value):
+        self.yearFilter = value
+
+    def updateCategory(self, value):
+        self.categoryFilter = value
+
+    def updateMajor(self, value):
+        self.majorFilter = value
+
+    def updateDesignation(self, value):
+        self.designationFilter = value
 
     def applyFilter(self):
-        self.db = self.Connect()
+        self.Connect()
         self.cursor = self.db.cursor()
 
         majorList = []
         yearList = []
 
-        if self.major.get() != "" :
-            majorList.append(self.major.get() + " students only")
+        requirementsList = ['Freshman only', 'Sophomore only', 'Junior only', 'Senior only', 'CS student only', 'ECE student only', 'ChE student only']
+
+        if self.majorFilter != "" :
+            majorList.append(self.majorFilter + " students only")
         else:
-            majorList = ["Computer Science students only", "Electrical Engineering students only", "Chemical Engineering students only"]
+            majorList = requirementsList
 
-        if self.year.get() != "" :
-            yearList.append(self.year.get() + " only")
+        if self.yearFilter != "" :
+            yearList.append(self.yearFilter + " only")
         else:
-            yearList = ["Freshman only", "Sophomore only", "Junior only", "Senior only"]
+            yearList = requirementsList
 
 
-        self.SQL_ApplyFilterProject = "SELECT DISTINCT(Project_Name) FROM PROJECT AS P LEFT OUTER JOIN PROJECT_CATEGORY AS PC LEFT OUTER JOIN PROJECT_REQUIREMENTS AS PR" \
-                               " ON P.Project_Name = PC.Project_Name AND P.Project_Name = PR.Project_Name" \
-                               " WHERE P.Project_Name = CASE WHEN (%s != "") THEN %s ELSE P.Project_Name" \
-                               " AND P.Requirement_Name IN (' + ','.join(map(str, majorList)) + ')" \
-                               " AND P.Requirement_Name IN (' + ','.join(map(str, yearList)) + ')" \
-                               " AND P.Designation_Name = CASE WHEN (%s != "") THEN %s ELSE P.Designation_Name" \
-                               " AND P.Category_Name = CASE WHEN (%s != "") THEN %s ELSE P.Category_Name"
 
-        self.SQL_ApplyFilterCourse = "SELECT DISTINCT(Course_Name) FROM COURSE AS C LEFT OUTER JOIN COURSE_CATEGORY AS CC LEFT OUTER JOIN COURSE_REQUIREMENTS AS CR" \
-                               " ON C.Course_Name = CC.Course_Name AND C.Course_Name = CR.Course_Name" \
-                               " WHERE C.Course_Name = CASE WHEN (%s != "") THEN %s ELSE C.Course_Name" \
-                               " AND C.Requirement_Name IN (' + ','.join(map(str, majorList)) + ')" \
-                               " AND C.Requirement_Name IN (' + ','.join(map(str, yearList)) + ')" \
-                               " AND C.Designation_Name = CASE WHEN (%s != "") THEN %s ELSE C.Designation_Name" \
-                               " AND C.Category_Name = CASE WHEN (%s != "") THEN %s ELSE C.Category_Name"
+
+
+        self.SQL_ApplyFilterProject = "SELECT DISTINCT(P.Project_Name) FROM PROJECT AS P LEFT OUTER JOIN PROJECT_CATEGORY AS PC ON P.Project_Name = PC.Project_Name" \
+                               " LEFT OUTER JOIN PROJECT_REQUIREMENTS AS PR ON P.Project_Name = PR.Project_Name" \
+                               " WHERE P.Project_Name = CASE WHEN (%s != '') THEN %s ELSE P.Project_Name END" \
+                               " AND EXISTS( SELECT * " \
+                                           " FROM PROJECT_REQUIREMENTS AS PRE" \
+                                           " WHERE PRE.Project_Name = P.Project_Name AND ((PRE.Requirements IN %s) OR (PRE.Requirements IS NULL AND %s = '')))" \
+                               " AND EXISTS( SELECT *" \
+                                           " FROM PROJECT_REQUIREMENTS AS PRE" \
+                                           " WHERE PRE.Project_Name = P.Project_Name AND ((PRE.Requirements IN %s) OR (PRE.Requirements IS NULL AND %s = '')))" \
+                               " AND P.Designation_Name = CASE WHEN (%s != '') THEN %s ELSE P.Designation_Name END" \
+                               " AND PC.Category_Name = CASE WHEN (%s != '') THEN %s ELSE PC.Category_Name END "
+
+
+        self.SQL_ApplyFilterCourse = "SELECT DISTINCT(C.Course_Name) FROM COURSE AS C LEFT OUTER JOIN COURSE_CATEGORY AS CC ON C.Course_Name = CC.Course_Name" \
+                               " LEFT OUTER JOIN COURSE_REQUIREMENTS AS CR ON C.Course_Name = CR.Course_Name" \
+                               " WHERE C.Course_Name = CASE WHEN (%s != '') THEN %s ELSE C.Course_Name END" \
+                               " AND EXISTS( SELECT * " \
+                                           " FROM COURSE_REQUIREMENTS AS COR" \
+                                           " WHERE COR.Course_Name = C.Course_Name AND ((COR.Requirements IN %s) OR (COR.Requirements IS NULL AND %s = '')))" \
+                               " AND EXISTS( SELECT *" \
+                                           " FROM COURSE_REQUIREMENTS AS COR" \
+                                           " WHERE COR.Course_Name = C.Course_Name AND ((COR.Requirements IN %s) OR (COR.Requirements IS NULL AND %s = '')))" \
+                               " AND C.Designation_Name = CASE WHEN (%s != '') THEN %s ELSE C.Designation_Name END" \
+                               " AND CC.Category_Name = CASE WHEN (%s != '') THEN %s ELSE CC.Category_Name END "
+
+
 
 
         if self.projCourseSelection.get() == 0 :
-            self.cursor.execute(self.SQL_ApplyFilterProject, (self.title.get(), self.title.get(), self.category.get(), self.category.get()))
+            self.cursor.execute(self.SQL_ApplyFilterProject, (self.title.get(), self.title.get(), majorList, self.majorFilter, yearList, self.yearFilter, self.designationFilter, self.designationFilter, self.categoryFilter, self.categoryFilter))
         elif self.projCourseSelection.get() == 1:
-            self.cursor.execute(self.SQL_ApplyFilterCourse, (self.title.get(), self.title.get(), self.category.get(), self.category.get()))
+            self.cursor.execute(self.SQL_ApplyFilterCourse, (self.title.get(), self.title.get(), majorList, self.majorFilter, yearList, self.yearFilter, self.designationFilter, self.designationFilter, self.categoryFilter, self.categoryFilter))
 
         results = self.cursor.fetchall()
+        print(results)
+        print(results[0][0])
 
         for row in results:
-            self.table.insert('Name', 'end', row[0])
+            print(row[0])
+            self.table.insert('', 'end', results[0][0])
             if self.projCourseSelection.get() == 0 :
-                self.table.insert('Type', 'end', "Project")
+                self.table.insert('', 'end', "Project")
             else :
-                self.table.insert('Type', 'end', "Course")
+                self.table.insert('', 'end', "Course")
 
 
 
@@ -295,6 +327,39 @@ class masterGUI:
         self.myAppBtn.grid(row=2, column=2, sticky=E)
         self.backBtn = Button(self.smallFrame, width=1, text="Back", padx=80)  # Need a command here as well
         self.backBtn.grid(row=3, column=2, stick=E)
+
+
+
+    def EditProfilePage(self):
+        self.db = self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.SQL_GetMajoriEditProf = "SELECT Major_Name, Year FROM STUDENT WHERE Username = %s"
+        self.cursor.execute(self.SQL_GetMajoriEditProf, (self.usernameEntry.get()))
+        results = self.cursor.fetchall()
+        defaultMajor = results[0][0]
+        defaultYear = results[0][1]
+
+
+
+        self.editProfilePage = Toplevel()
+
+        self.bigFrame = Frame(self.mePage)
+        self.bigFrame.grid(row = 1, column = 0)
+        self.smallFrame = Frame(self.bigFrame)
+        self.smallFrame.grid(row = 0, column = 0)
+
+        self.titleLbEditProf = Label(self.smallFrame, text = "Edit Profile")
+        self.titleLbEditProf.grid(row = 0, column = 2)
+
+        self.defaultMajorEditProf = defaultMajor
+        self.majorEditProf = OptionMenu(self.smallFrame, self.defaultMajorEditProf, "Computer Science", "Electrical Engineering", "Chemical Engineering")
+        self.majorEditProf.grid(row = 1, column = 2)
+
+        self.defaultYearEditProf = defaultYear
+        self.yearEditProf = OptionMenu(self.smallFrame, self.defaultYearEditProf, "Freshman",
+                                        "Sopohomore", "Junior", "Senior")
+        self.yearEditProf.grid(row=2, column=2)
 
 
 

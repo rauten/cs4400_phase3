@@ -14,6 +14,10 @@ import time
 import datetime
 import random
 
+# READ: WHEN NAMING GUIS METHODS, USE CAPS AS SO: def ExampleGUI()
+#       WHEN NAMING FUNCTIONS, PLEASE USE CAMEL CASE Ex: fooBar()
+
+
 
 class masterGUI:
 
@@ -149,6 +153,10 @@ class masterGUI:
         titleLB = Label(self.smallFrame, text="Title")
         titleLB.grid(row=1, column=0, sticky=W, padx=5, pady=5)
 
+        # ME PAGE
+        self.applyFilterBtn = Button(self.smallFrame, width=10, text="Me", command=self.openMe)
+        self.applyFilterBtn.grid(row=0, column=0, sticky=W)
+
         # CATEGORY SELECTION
         self.categoryFilter = ""
         self.choiceVarOne = StringVar()
@@ -244,10 +252,6 @@ class masterGUI:
         else:
             yearList = requirementsList
 
-
-
-
-
         self.SQL_ApplyFilterProject = "SELECT DISTINCT(P.Project_Name) FROM PROJECT AS P LEFT OUTER JOIN PROJECT_CATEGORY AS PC ON P.Project_Name = PC.Project_Name" \
                                " LEFT OUTER JOIN PROJECT_REQUIREMENTS AS PR ON P.Project_Name = PR.Project_Name" \
                                " WHERE P.Project_Name = CASE WHEN (%s != '') THEN %s ELSE P.Project_Name END" \
@@ -304,7 +308,7 @@ class masterGUI:
 
 
     def openMe(self):
-        self.win.withdraw()
+        self.mainPage.withdraw()
         self.MePage()
 
     def MePage(self):
@@ -318,48 +322,103 @@ class masterGUI:
 
 
         self.titleLb = Label(self.win, text="Me")
-        self.titleLb.grid(row=0, column=2, columnspan=2, padx=150, sticky=N)
+        self.titleLb.grid(row=1, column=2, columnspan=2, padx=150, sticky=N)
+
         self.editProfileBtn = Button(self.smallFrame, width=1, text="Edit Profile", padx=80,
-                                     pady=20)  # Must insert a command here
-        self.editProfileBtn.grid(row=1, column=2, sticky=E)
+                                     pady=20, command = self.showEditProfilePage)
+        self.editProfileBtn.grid(row=2, column=2, sticky=E)
         self.myAppBtn = Button(self.smallFrame, width=1, text="My Application", padx=80,
                                pady=50)  # Also need a command functionality here
-        self.myAppBtn.grid(row=2, column=2, sticky=E)
+        self.myAppBtn.grid(row=3, column=2, sticky=E)
         self.backBtn = Button(self.smallFrame, width=1, text="Back", padx=80)  # Need a command here as well
-        self.backBtn.grid(row=3, column=2, stick=E)
+        self.backBtn.grid(row=4, column=2, stick=E)
+
+
+    def showEditProfilePage(self):
+        self.mePage.withdraw()
+        self.EditProfilePage()
 
 
 
     def EditProfilePage(self):
-        self.db = self.Connect()
+        self.editProfilePage = Toplevel()
+
+        self.bigFrame = Frame(self.editProfilePage)
+        self.bigFrame.grid(row = 1, column = 0)
+        self.smallFrame = Frame(self.bigFrame)
+        self.smallFrame.grid(row = 0, column = 0)
+
+        self.Connect()
         self.cursor = self.db.cursor()
 
-        self.SQL_GetMajoriEditProf = "SELECT Major_Name, Year FROM STUDENT WHERE Username = %s"
+        self.SQL_GetMajoriEditProf = " SELECT Major_Name, Year" \
+                                     " FROM STUDENT " \
+                                     " WHERE Username = %s"
         self.cursor.execute(self.SQL_GetMajoriEditProf, (self.usernameEntry.get()))
         results = self.cursor.fetchall()
         defaultMajor = results[0][0]
         defaultYear = results[0][1]
 
+        self.titleLbEditProf = Label(self.smallFrame, text="Edit Profile")
+        self.titleLbEditProf.grid(row=0, column=2)
 
-
-        self.editProfilePage = Toplevel()
-
-        self.bigFrame = Frame(self.mePage)
-        self.bigFrame.grid(row = 1, column = 0)
-        self.smallFrame = Frame(self.bigFrame)
-        self.smallFrame.grid(row = 0, column = 0)
-
-        self.titleLbEditProf = Label(self.smallFrame, text = "Edit Profile")
-        self.titleLbEditProf.grid(row = 0, column = 2)
+        self.majorEditProfLb = Label(self.smallFrame, text = "Major")
+        self.majorEditProfLb.grid(row = 1, column = 0)
 
         self.defaultMajorEditProf = defaultMajor
-        self.majorEditProf = OptionMenu(self.smallFrame, self.defaultMajorEditProf, "Computer Science", "Electrical Engineering", "Chemical Engineering")
-        self.majorEditProf.grid(row = 1, column = 2)
+        self.defaultMajorEditProfStringVar = StringVar()
+        self.defaultMajorEditProfStringVar.set(self.defaultMajorEditProf)
+        self.majorEditProf = OptionMenu(self.smallFrame, self.defaultMajorEditProfStringVar, "Computer Science",
+                                        "Electrical Engineering", "Chemical Engineering", command=self.updateMajor)
+        self.majorEditProf.config(width = 20)
+        self.majorEditProf.grid(row=1, column=2)
+
+
+        self.yearEditProfLb = Label(self.smallFrame, text = "Year")
+        self.yearEditProfLb.grid(row = 2, column = 0)
 
         self.defaultYearEditProf = defaultYear
-        self.yearEditProf = OptionMenu(self.smallFrame, self.defaultYearEditProf, "Freshman",
-                                        "Sopohomore", "Junior", "Senior")
+        self.defaultYearEditProfStringVar = StringVar()
+        self.defaultYearEditProfStringVar.set(self.defaultYearEditProf)
+        self.yearEditProf = OptionMenu(self.smallFrame, self.defaultYearEditProfStringVar, "Freshman",
+                                       "Sopohomore", "Junior", "Senior", command=self.updateYear)
+        self.yearEditProf.config(width = 20)
         self.yearEditProf.grid(row=2, column=2)
+
+        self.departmentEditProfLb = Label(self.smallFrame, text = "Department")
+
+
+        self.backEditProfBtn = Button(self.smallFrame, text = "Back", command = self.editProfile)
+        self.backEditProfBtn.grid(row = 3, column = 2)
+
+
+
+    def editProfile(self):
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        # Update major and year
+        self.SQL_EditProfile = " UPDATE STUDENT" \
+                               " SET Major_Name = %s, Year = %s" \
+                               " WHERE Username = %s"
+
+        # Filters are empty strings if they do not get 'updated' by the user.
+        # That is, if the user doesn't edit their major, or year, their major/year will be set to ''
+        if self.majorFilter == '':
+            self.majorFilter = self.defaultMajorEditProf #Sets the filter to the default (inital) value if nothing is changed
+        if self.yearFilter == '':
+            self.yearFilter = self.defaultYearEditProf
+
+        # Execute the SQL query
+        self.cursor.execute(self.SQL_EditProfile, (self.majorFilter, self.yearFilter, self.usernameEntry.get()))
+
+
+
+
+
+
+
+
 
 
 

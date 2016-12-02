@@ -186,12 +186,12 @@ class masterGUI:
             self.mainPageOpen() #Open the main page
         elif admin==1:
             messagebox.showwarning("Success! Login Successful!")
-            self.
+            self.AdminViewFunct()#open functionality page
             
 
             
 
-    def mainPageOpen(self):9
+    def mainPageOpen(self):
         self.win.withdraw()
         self.MainPage()
         self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
@@ -547,23 +547,25 @@ class masterGUI:
 
         self.bigFrame = Frame(self.adminPage)
         self.bigFrame.grid(row=1, column=0)
-        self.smallFrame = Frame(self.bigFrame)
+        self.smallFrame = Frame(self.adminPage)
         self.smallFrame.grid(row=0, column=0)
 
 
-        self.titleAdmin = Label(self.win, text="Choose Functionality")
+        self.titleAdmin = Label(self.bigFrame, text="Choose Functionality")
         self.titleAdmin.grid(row=1, column=2, columnspan=2, padx=150, sticky=N)
 
-        self.viewAppBtn = Button(self.smallFrame, width=1, text="View Applications", padx=80,
-                                     pady=20, command = self.ViewApplication)
-        self.viewProjBtn.grid(row=2, column=2, sticky=E)
-        self.myAppBtn = Button(self.smallFrame, width=1, text="View popular project report", padx=80,
-                               pady=50, command = self.showApplicationPage)
+        self.viewAppBtn = Button(self.smallFrame, width=3, text="View Applications", padx=80,
+                                     pady=10, command = self.ViewApplication)
+        self.viewAppBtn.grid(row=2, column=2, sticky=E)
+        self.myAppBtn = Button(self.smallFrame, width=3, text="View Popular Project Report", padx=80,
+                               pady=10, command = self.showApplicationPage)
         self.myAppBtn.grid(row=3, column=2, sticky=E)
-        self.viewAppReportBtn = Button(self.smallFrame, width=1, text="View Application report", padx=80, pady=50) #command = self.viewAppReportFunction
-        self.addProjBtn = Button(self.smallFrame, width=1, text="Add a Project", padx=80, pady=50) #command = self.AddProjectFunction
-        self.addCourseBtn = Button(self.smallFrame, width=1, text="Add a Course", padx=80,
-                                   pady=50) #command = self.AddCourseFunction
+        self.viewAppReportBtn = Button(self.smallFrame, width=3, text="View Application Report", padx=80, pady=10) #command = self.viewAppReportFunction
+        self.viewAppReportBtn.grid(row=4, column=2, sticky=E)
+        self.addProjBtn = Button(self.smallFrame, width=3, text="Add a Project", padx=80, pady=10) #command = self.AddProjectFunction
+        self.addProjBtn.grid(row=5, column=2, sticky=E)
+        self.addCourseBtn = Button(self.smallFrame, width=3, text="Add a Course", padx=80,pady=10) #command = self.AddCourseFunction
+        self.addCourseBtn.grid(row=6, column=2, sticky=E)
 
     def ViewApplication(self):
         self.viewApplication = Toplevel()
@@ -575,7 +577,7 @@ class masterGUI:
         self.l1 = Label(self.smallFrame, text="Application", width=30, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
         self.l1.grid(row=0, column=1)
 
-<<<<<<< Updated upstream
+
         self.Connect()
         self.cursor = self.db.cursor()
 
@@ -605,7 +607,7 @@ class masterGUI:
         self.rejectBtn.grid(row=10, column=9)
         
         
-=======
+
 ##    def ViewPopularProject(self):
 ##        self.viewPopularproject=Toplevel()
 ##        self.bigFrame=Frame(self.viewPopularproject)
@@ -618,7 +620,7 @@ class masterGUI:
 ##
 ##        self.SQL_PopulateProjects=
 
->>>>>>> Stashed changes
+
 
 
 

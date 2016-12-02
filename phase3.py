@@ -528,6 +528,33 @@ class masterGUI:
 
         self.usernameReg = Entry(self.smallFrame, width=50)
 
+    def backToAdminViewFunct(self):
+        self.viewApplication.withdraw()
+        self.AdminViewFunct()
+
+    def AdminViewFunct(self):
+        self.adminPage = Toplevel()
+
+        self.bigFrame = Frame(self.adminPage)
+        self.bigFrame.grid(row=1, column=0)
+        self.smallFrame = Frame(self.bigFrame)
+        self.smallFrame.grid(row=0, column=0)
+
+
+        self.titleAdmin = Label(self.win, text="Choose Functionality")
+        self.titleAdmin.grid(row=1, column=2, columnspan=2, padx=150, sticky=N)
+
+        self.viewAppBtn = Button(self.smallFrame, width=1, text="View Applications", padx=80,
+                                     pady=20, command = self.ViewApplication)
+        self.viewProjBtn.grid(row=2, column=2, sticky=E)
+        self.myAppBtn = Button(self.smallFrame, width=1, text="View popular project report", padx=80,
+                               pady=50, command = self.showApplicationPage)
+        self.myAppBtn.grid(row=3, column=2, sticky=E)
+        self.viewAppReportBtn = Button(self.smallFrame, width=1, text="View Application report", padx=80, pady=50) #command = self.viewAppReportFunction
+        self.addProjBtn = Button(self.smallFrame, width=1, text="Add a Project", padx=80, pady=50) #command = self.AddProjectFunction
+        self.addCourseBtn = Button(self.smallFrame, width=1, text="Add a Course", padx=80,
+                                   pady=50) #command = self.AddCourseFunction
+
     def ViewApplication(self):
         self.viewApplication = Toplevel()
         self.bigFrame = Frame(self.viewApplication)
@@ -538,6 +565,35 @@ class masterGUI:
         self.l1 = Label(self.smallFrame, text="Application", width=30, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
         self.l1.grid(row=0, column=1)
 
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.SQL_PopulateViewApps = "SELECT Project_Name, Major_Name, Year, Status" \
+                                    "FROM APPLY NATURAL JOIN STUDENT" \
+                                    "ORDER BY Status"
+
+        self.cursor.execute(self.SQL_PopulateViewApps)
+
+        results = self.cursor.fetchall()
+        
+        self.dataColumns = ["Project", "Applicant Major", "Applicant Year", "Status"]
+        self.AppsView = ttk.Treeview(self.smallFrame, columns=self.dataColumns, show = 'headings')
+        self.AppsView.grid(row=6, column=0, sticky=W, columnspan=4)
+        self.AppsView.heading('#1', text="Project")
+        self.AppsView.heading('#2', text="Applicant Major")
+        self.AppsView.heading('#3', text="Applicant Year")
+        self.AppsView.heading('#4', text="Status")
+        
+        self.backBtn = Button(self.smallFrame, text = "Back", command = self.backToAdminViewFunct)
+        self.backBtn.grid(row = 10, column = 1)
+
+        self.acceptBtn = Button(self.smallFrame, text = "Apply") #command = self.changeStatusToAccepted
+        self.acceptBtn.grid(row=10, column=8)
+
+        self.rejectBtn = Button(self.smallFrame, text = "Reject") #command = self.changeStatusToRejected
+        self.rejectBtn.grid(row=10, column=9)
+        
+        
 
 
 

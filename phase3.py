@@ -27,6 +27,10 @@ class masterGUI:
         # Setup
         self.win = win
 
+        self.rows = 3
+        self.categoryList = []
+
+
         # Titles
         self.label1 = Label(self.win, text = "Login")
         self.label1.grid(row = 0, column = 0, columnspan = 2)
@@ -44,7 +48,7 @@ class masterGUI:
         self.passwordEntry.grid(row = 2, column = 1, padx = 5, pady = 5)
 
         # Initialize buttons
-        self.btRegister = Button(self.win, width = 10, text = "Register", padx=5, pady=5, command = self.registerOpen)
+        self.btRegister = Button(self.win, width = 10, text = "Register", padx=5, pady=5, command = self.addField)
         self.btRegister.grid(row = 3, column = 1, sticky=E)
         self.btLogin = Button(self.win, width = 5, padx=5, pady=5, text = "Login", command = self.loginCheck)
         self.btLogin.grid(row = 3, column = 1, sticky=W)
@@ -53,6 +57,17 @@ class masterGUI:
     def registerOpen(self):
         self.win.withdraw()
         self.RegisterPage()
+
+    def addField(self):
+        ent = Entry(self.win, width = 20)
+        ent.grid(row = self.rows, column = 1)
+        self.categoryList.append(ent)
+        self.rows = self.rows + 1
+        self.btLogin.grid_forget()
+        self.btLogin.grid(row = self.rows, column = 1, sticky = W)
+
+        self.btRegister.grid_forget()
+        self.btRegister.grid(row = self.rows, column = 1, sticky = E)
 
 
     def Connect(self):
@@ -208,12 +223,11 @@ class masterGUI:
         self.both.grid(row=3, column=6)
 
         # Treeview table
-        self.table = ttk.Treeview(self.smallFrame, height=15, columns=("Name"), selectmode="extended")
+        self.mainPageColumns = ['Name', 'Type']
+        self.table = ttk.Treeview(self.smallFrame, height=15, columns=self.mainPageColumns, show = 'headings')
         self.table.grid(row=6, column=0, sticky=W, columnspan=5)
-        self.table.heading('#0', text="Name")
-        self.table.heading('#1', text="Type")
-        self.table.column('#0', stretch=tkinter.YES)
-        self.table.column('#1', stretch=tkinter.YES)
+        self.table.heading('#1', text="Name")
+        self.table.heading('#2', text="Type")
 
         # BUTTONS
         self.applyFilterBtn = Button(self.smallFrame, width=10, text="Apply Filter", command = self.applyFilter)
@@ -289,13 +303,19 @@ class masterGUI:
         print(results)
         print(results[0][0])
 
-        for row in results:
-            print(row[0])
-            self.table.insert('', 'end', results[0][0])
-            if self.projCourseSelection.get() == 0 :
-                self.table.insert('', 'end', "Project")
-            else :
-                self.table.insert('', 'end', "Course")
+        self.newList = []
+        self.currList = []
+
+        if self.projCourseSelection.get() == 0:
+            for row in results:
+                self.currList = list(row)
+                self.currList.append("Project")
+                self.newList.append(tuple(self.currList))
+
+
+        for row in self.newList :
+            self.table.insert('', 'end', value = row)
+
 
 
 
@@ -328,7 +348,7 @@ class masterGUI:
                                      pady=20, command = self.showEditProfilePage)
         self.editProfileBtn.grid(row=2, column=2, sticky=E)
         self.myAppBtn = Button(self.smallFrame, width=1, text="My Application", padx=80,
-                               pady=50)  # Also need a command functionality here
+                               pady=50, command = self.showApplicationPage)
         self.myAppBtn.grid(row=3, column=2, sticky=E)
         self.backBtn = Button(self.smallFrame, width=1, text="Back", padx=80)  # Need a command here as well
         self.backBtn.grid(row=4, column=2, stick=E)
@@ -411,6 +431,53 @@ class masterGUI:
 
         # Execute the SQL query
         self.cursor.execute(self.SQL_EditProfile, (self.majorFilter, self.yearFilter, self.usernameEntry.get()))
+
+
+    def showApplicationPage(self):
+        self.mePage.withdraw()
+        self.ApplicationPage()
+
+    def ApplicationPage(self):
+        self.applicationPage = Toplevel()
+
+        self.bigFrame = Frame(self.applicationPage)
+        self.bigFrame.grid(row=1, column=0)
+        self.smallFrame = Frame(self.bigFrame)
+        self.smallFrame.grid(row=0, column=0)
+
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.SQL_PopulateApps = " SELECT Date, Project_Name, Status" \
+                                " FROM APPLY" \
+                                " WHERE Username = %s" \
+                                " ORDER BY Date, Project_Name, Status"
+
+        self.cursor.execute(self.SQL_PopulateApps, (self.usernameEntry.get()))
+
+        results = self.cursor.fetchall()
+
+        self.myApplicationLb = Label(self.smallFrame, text = "My Application")
+        self.myApplicationLb.grid(row = 0, column = 2)
+
+        self.dataColumns = ['Date', 'Project Name', 'Status']
+        self.myAppsTreeView = ttk.Treeview(self.smallFrame, columns=self.dataColumns, show = 'headings')
+        self.myAppsTreeView.grid(row=6, column=0, sticky=W, columnspan=5)
+        self.myAppsTreeView.heading('#1', text="Date")
+        self.myAppsTreeView.heading('#2', text="Project Name")
+        self.myAppsTreeView.heading('#3', text="Status")
+
+        self.backBtnAppPage = Button(self.smallFrame, text = "Back", command = self.backToMePage)
+        self.backBtnAppPage.grid(row = 10, column = 2)
+
+        for row in results:
+            self.myAppsTreeView.insert('', 'end', value = row)
+
+
+    def backToMePage(self):
+        self.applicationPage.withdraw()
+        self.MePage()
+
 
 
 

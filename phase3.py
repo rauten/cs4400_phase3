@@ -527,7 +527,7 @@ class masterGUI:
 
         self.backBtnAppPage = Button(self.smallFrame, text = "Back", command = self.backToMePage)
         self.backBtnAppPage.grid(row = 10, column = 2)
-
+        
         for row in results:
             self.myAppsTreeView.insert('', 'end', value = row)
 
@@ -554,19 +554,17 @@ class masterGUI:
         self.titleAdmin = Label(self.bigFrame, text="Choose Functionality")
         self.titleAdmin.grid(row=1, column=2, columnspan=2, padx=150, sticky=N)
 
-<<<<<<< HEAD
         self.viewAppBtn = Button(self.smallFrame, width=3, text="View Applications", padx=80,
                                      pady=10, command = self.ViewApplication)
         self.viewAppBtn.grid(row=2, column=2, sticky=E)
         self.myAppBtn = Button(self.smallFrame, width=3, text="View Popular Project Report", padx=80,
                                pady=10, command = self.showApplicationPage)
-=======
+
         self.viewAppBtn = Button(self.smallFrame, width=1, text="View Applications", padx=80,
                                      pady=20, command = self.ViewApplication)
         self.viewAppBtn.grid(row=2, column=2, sticky=E)
         self.myAppBtn = Button(self.smallFrame, width=1, text="View popular project report", padx=80,
                                pady=50, command = self.showApplicationPage)
->>>>>>> origin/master
         self.myAppBtn.grid(row=3, column=2, sticky=E)
         self.viewAppReportBtn = Button(self.smallFrame, width=3, text="View Application Report", padx=80, pady=10) #command = self.viewAppReportFunction
         self.viewAppReportBtn.grid(row=4, column=2, sticky=E)
@@ -576,6 +574,7 @@ class masterGUI:
         self.addCourseBtn.grid(row=6, column=2, sticky=E)
 
     def ViewApplication(self):
+        self.adminPage.withdraw()
         self.viewApplication = Toplevel()
         self.bigFrame = Frame(self.viewApplication)
         self.bigFrame.grid(row=1, column=0)
@@ -589,44 +588,88 @@ class masterGUI:
         self.Connect()
         self.cursor = self.db.cursor()
 
-        self.SQL_PopulateViewApps = "SELECT Project_Name, Major_Name, Year, Status" \
-                                    "FROM APPLY NATURAL JOIN STUDENT" \
-                                    "ORDER BY Status"
+        self.SQL_PopulateViewApps = "SELECT Project_Name, Major_Name, Year, Status, Username" \
+                                    " FROM APPLY NATURAL JOIN STUDENT" \
+                                    " ORDER BY Status"
 
         self.cursor.execute(self.SQL_PopulateViewApps)
 
         results = self.cursor.fetchall()
+       
         
-        self.dataColumns = ["Project", "Applicant Major", "Applicant Year", "Status"]
+        self.dataColumns = ["Project", "Applicant Major", "Applicant Year", "Status", "Username"]
         self.AppsView = ttk.Treeview(self.smallFrame, columns=self.dataColumns, show = 'headings')
         self.AppsView.grid(row=6, column=0, sticky=W, columnspan=4)
         self.AppsView.heading('#1', text="Project")
         self.AppsView.heading('#2', text="Applicant Major")
         self.AppsView.heading('#3', text="Applicant Year")
         self.AppsView.heading('#4', text="Status")
+        self.AppsView.heading('#5', text="Username")
         
         self.backBtn = Button(self.smallFrame, text = "Back", command = self.backToAdminViewFunct)
         self.backBtn.grid(row = 10, column = 1)
 
-        self.acceptBtn = Button(self.smallFrame, text = "Apply") #command = self.changeStatusToAccepted
+        self.acceptBtn = Button(self.smallFrame, text = "Accept", command = self.changeStatusToAccepted)
         self.acceptBtn.grid(row=10, column=8)
 
-        self.rejectBtn = Button(self.smallFrame, text = "Reject") #command = self.changeStatusToRejected
+        self.rejectBtn = Button(self.smallFrame, text = "Reject", command = self.changeStatusToRejected)
         self.rejectBtn.grid(row=10, column=9)
+        
+        print(results)
+        for row in results:
+            self.AppsView.insert('', 'end', value = row)
+            print(row)
+            
+    def changeStatusToAccepted(self):
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.SQL_UpdateStatus = "UPDATE APPLY" \
+                                " SET Status = 'Accepted'"\
+                                " WHERE Project_Name = %s AND Username = %s"
         
         
 
-##    def ViewPopularProject(self):
-##        self.viewPopularproject=Toplevel()
-##        self.bigFrame=Frame(self.viewPopularproject)
-##        self.bigFrame.grid(row=1, column=0)
-##        self.smallframe=Frame(self.bigFrame)
-##        self.smallframe.grid(row=0,column=0)
-##
-##        self.Connect()
-##        self.cursor=self.db.cursor()
-##
-##        self.SQL_PopulateProjects=
+
+        currentItem = self.AppsView.focus()
+        itemDict = self.AppsView.item(currentItem)
+        appInfo = itemDict.get("values")
+        statusA = appInfo[3]
+        userNameA = appInfo[4]
+        print(statusA)
+        projectName = appInfo[0]
+        if statusA == "Pending":
+            self.cursor.execute(self.SQL_UpdateStatus, (projectName, userNameA))
+        else:
+            messagebox.showinfo("Your status is not matching")
+                
+    def changeStatusToRejected(self):
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.SQL_UpdateStatus = "UPDATE APPLY" \
+                                " SET Status = 'Rejected'"\
+                                " WHERE Project_Name = %s AND Username = %s"
+        
+        
+
+
+        currentItem = self.AppsView.focus()
+        itemDict = self.AppsView.item(currentItem)
+        appInfo = itemDict.get("values")
+        statusA = appInfo[3]
+        userNameA = appInfo[4]
+        print(statusA)
+        projectName = appInfo[0]
+        if statusA == "Pending":
+            self.cursor.execute(self.SQL_UpdateStatus, (projectName, userNameA))
+        else:
+            messagebox.showinfo("Your status is not matching")
+          
+            
+            
+            
+
 
 
 

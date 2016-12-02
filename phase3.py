@@ -554,19 +554,15 @@ class masterGUI:
         self.titleAdmin = Label(self.bigFrame, text="Choose Functionality")
         self.titleAdmin.grid(row=1, column=2, columnspan=2, padx=150, sticky=N)
 
-<<<<<<< HEAD
+
         self.viewAppBtn = Button(self.smallFrame, width=3, text="View Applications", padx=80,
                                      pady=10, command = self.ViewApplication)
         self.viewAppBtn.grid(row=2, column=2, sticky=E)
         self.myAppBtn = Button(self.smallFrame, width=3, text="View Popular Project Report", padx=80,
-                               pady=10, command = self.showApplicationPage)
-=======
-        self.viewAppBtn = Button(self.smallFrame, width=1, text="View Applications", padx=80,
-                                     pady=20, command = self.ViewApplication)
-        self.viewAppBtn.grid(row=2, column=2, sticky=E)
-        self.myAppBtn = Button(self.smallFrame, width=1, text="View popular project report", padx=80,
-                               pady=50, command = self.showApplicationPage)
->>>>>>> origin/master
+                               pady=10, command = self.ViewPopularProject)
+
+ 
+
         self.myAppBtn.grid(row=3, column=2, sticky=E)
         self.viewAppReportBtn = Button(self.smallFrame, width=3, text="View Application Report", padx=80, pady=10) #command = self.viewAppReportFunction
         self.viewAppReportBtn.grid(row=4, column=2, sticky=E)
@@ -616,17 +612,38 @@ class masterGUI:
         
         
 
-##    def ViewPopularProject(self):
-##        self.viewPopularproject=Toplevel()
-##        self.bigFrame=Frame(self.viewPopularproject)
-##        self.bigFrame.grid(row=1, column=0)
-##        self.smallframe=Frame(self.bigFrame)
-##        self.smallframe.grid(row=0,column=0)
-##
-##        self.Connect()
-##        self.cursor=self.db.cursor()
-##
-##        self.SQL_PopulateProjects=
+    def ViewPopularProject(self):
+        self.adminPage.withdraw()
+        self.viewPopularproject=Toplevel()
+        self.bigFrame2=Frame(self.viewPopularproject)
+        self.bigFrame2.grid(row=1, column=0)
+        self.smallframe2=Frame(self.viewPopularproject)
+        self.smallframe2.grid(row=0,column=0)
+
+        self.Connect()
+        self.cursor=self.db.cursor()
+
+        self.SQL_PopulateViewPopularProjects= "SELECT DISTINCT(Project_Name), COUNT(Project_Name)"\
+                                              " FROM APPLY"\
+                                              " ORDER BY COUNT(*) DESC"\
+                                              " LIMIT 10"
+        self.cursor.execute(self.SQL_PopulateViewPopularProjects)
+        results=self.cursor.fetchall()
+        print(results)
+
+        self.dataColumns = ["Project","# of Applicants"]
+        self.PopProjView = ttk.Treeview(self.smallframe2, columns=self.dataColumns, show = 'headings')
+        self.PopProjView.grid(row=1, column=0, sticky=W, columnspan=2)
+        self.PopProjView.heading('#1', text="Project")
+        self.PopProjView.heading('#2', text="# of Applicants")
+
+        self.backBtn = Button(self.smallframe2, text="Back", command=self.backToAdminViewFunct)
+        self.backBtn.grid(row=6, column=1, sticky=W)
+
+        for row in results:
+            self.PopProjView.insert('', 'end', value = row)
+
+        
 
 
 

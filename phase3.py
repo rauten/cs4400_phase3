@@ -575,6 +575,7 @@ class masterGUI:
 
     def ViewApplication(self):
         self.adminPage.withdraw()
+        
         self.viewApplication = Toplevel()
         self.bigFrame = Frame(self.viewApplication)
         self.bigFrame.grid(row=1, column=0)

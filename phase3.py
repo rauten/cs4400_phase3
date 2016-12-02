@@ -527,7 +527,16 @@ class masterGUI:
         self.MePage()
 
         self.usernameReg = Entry(self.smallFrame, width=50)
-        
+
+    def ViewApplication(self):
+        self.viewApplication = Toplevel()
+        self.bigFrame = Frame(self.viewApplication)
+        self.bigFrame.grid(row=1, column=0)
+        self.smallFrame = Frame(self.viewApplication)
+        self.smallFrame.grid(row=0, column=0)
+
+        self.l1 = Label(self.smallFrame, text="Application", width=30, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
+        self.l1.grid(row=0, column=1)
 
 
 

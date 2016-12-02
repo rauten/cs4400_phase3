@@ -251,12 +251,17 @@ class masterGUI:
         self.Connect()
         self.cursor = self.db.cursor()
 
+        print(self.table.get_children())
+
+        if self.table.get_children() != ():
+            self.table.delete(self.table.get_children())
+
         majorList = []
         yearList = []
 
         requirementsList = ['Freshman only', 'Sophomore only', 'Junior only', 'Senior only', 'CS student only', 'ECE student only', 'ChE student only']
 
-        if self.majorFilter != "" :
+        if self.majorFilter != "":
             majorList.append(self.majorFilter + " students only")
         else:
             majorList = requirementsList
@@ -350,8 +355,12 @@ class masterGUI:
         self.myAppBtn = Button(self.smallFrame, width=1, text="My Application", padx=80,
                                pady=50, command = self.showApplicationPage)
         self.myAppBtn.grid(row=3, column=2, sticky=E)
-        self.backBtn = Button(self.smallFrame, width=1, text="Back", padx=80)  # Need a command here as well
+        self.backBtn = Button(self.smallFrame, width=1, text="Back", padx=80, command = self.backToMainPage)  # Need a command here as well
         self.backBtn.grid(row=4, column=2, stick=E)
+
+    def backToMainPage(self):
+        self.mePage.withdraw()
+        self.MainPage()
 
 
     def showEditProfilePage(self):
@@ -432,6 +441,9 @@ class masterGUI:
         # Execute the SQL query
         self.cursor.execute(self.SQL_EditProfile, (self.majorFilter, self.yearFilter, self.usernameEntry.get()))
 
+        self.editProfilePage.withdraw()
+        self.MePage()
+
 
     def showApplicationPage(self):
         self.mePage.withdraw()
@@ -470,6 +482,8 @@ class masterGUI:
         self.backBtnAppPage = Button(self.smallFrame, text = "Back", command = self.backToMePage)
         self.backBtnAppPage.grid(row = 10, column = 2)
 
+        
+
         for row in results:
             self.myAppsTreeView.insert('', 'end', value = row)
 
@@ -477,17 +491,6 @@ class masterGUI:
     def backToMePage(self):
         self.applicationPage.withdraw()
         self.MePage()
-
-
-
-
-
-
-
-
-
-
-
 
 
 

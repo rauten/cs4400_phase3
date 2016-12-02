@@ -48,9 +48,9 @@ class masterGUI:
         self.passwordEntry.grid(row = 2, column = 1, padx = 5, pady = 5)
 
         # Initialize buttons
-        self.btRegister = Button(self.win, width = 10, text = "Register", padx=5, pady=5, command = self.addField)
+        self.btRegister = Button(self.win, width = 10, text = "Register", padx=5, pady=5, command = self.RegisterPage)
         self.btRegister.grid(row = 3, column = 1, sticky=E)
-        self.btLogin = Button(self.win, width = 5, padx=5, pady=5, text = "Login", command = self.loginCheck)
+        self.btLogin = Button(self.win, width = 5, padx=5, pady=5, text = "Login", command = self.LoginCheck)
         self.btLogin.grid(row = 3, column = 1, sticky=W)
 
     def showWin(self):
@@ -61,25 +61,10 @@ class masterGUI:
         self.win.withdraw()
         self.RegisterPage()
 
-    def addField(self):
-        ent = Entry(self.win, width = 20)
-        ent.grid(row = self.rows, column = 1)
-        self.categoryList.append(ent)
-        self.rows = self.rows + 1
-        self.btLogin.grid_forget()
-        self.btLogin.grid(row = self.rows, column = 1, sticky = W)
-
-        self.btRegister.grid_forget()
-        self.btRegister.grid(row = self.rows, column = 1, sticky = E)
-
-
     def Connect(self):
         try:
             self.db = pymysql.connect(host="academic-mysql.cc.gatech.edu",passwd="Z8IHtiyg",user="cs4400_Team_9",db="cs4400_Team_9")
-<<<<<<< HEAD
-=======
             self.cursor = self.db.cursor()
->>>>>>> refs/remotes/origin/master
         except:
             raise
             messagebox.showinfo("Connection error. Check your Internet Connection and/or code!")
@@ -112,22 +97,18 @@ class masterGUI:
         self.confirmPassword = Entry(self.smallFrame, width=50)
         self.confirmPassword.grid(row=4, column=1, sticky=E, pady=5)
 
-<<<<<<< HEAD
+
         regButton = Button(self.bigFrame, text="Create", width=10, bg="white", command = self.registerNew)
-=======
-        regButton = Button(self.bigFrame, text="Create", width=10, bg="white",command = self.RegisterNew)
->>>>>>> refs/remotes/origin/master
         regButton.grid(row=7, column=0)
 
     
     def registerNew(self): #Pass in username
         self.Connect()
-<<<<<<< HEAD
         self.cursor = self.db.cursor()
         self.SQL_RegisterCheck = "SELECT Username FROM USER WHERE Username = %s"
         existUser = self.cursor.execute(self.SQL_RegisterCheck,(self.usernameEntry.get()))
         print(existUser)
-
+        null2 = "0"
         if self.confirmPassword.get() != self.passwordReg.get() :
             messagebox.showwarning("Error", "Passwords do not match")
         elif self.usernameReg.get() == "":
@@ -137,57 +118,58 @@ class masterGUI:
         elif existUser > 0:
             messagebox.showwarning("Error", "Username already exists!")
         else:
-            self.SQL_RegisterUser = "INSERT INTO STUDENT (Username, GT_Email, Password) VALUES (%s, %s, %s)"
-            self.cursor.execute(self.SQL_RegisterUser, (self.usernameReg.get(), self.email.get(), self.passwordReg.get()))
+            self.SQL_RegisterStudent = "INSERT INTO STUDENT (Username, GT_Email, Password) VALUES (%s, %s, %s)"
+            self.cursor.execute(self.SQL_RegisterStudent, (self.usernameReg.get(), self.email.get(), self.passwordReg.get()))
+            self.SQL_User = "INSERT INTO USER (Username,Password,isAdmin) VALUES(%s, %s, %s)"
+            self.cursor.execute(self.SQL_User, (self.usernameReg.get(), self.passwordReg.get(), null2))
+            self.db.commit()
+            self.db.close()
             self.mainPageOpen() #Change this to login page
 
 
-    def loginCheck(self):
-=======
-        self.sql = "SELECT Username,GT_Email,Password FROM STUDENT"
-
-        self.cursor.execute(self.sql)
-        information = self.cursor.fetchall()
-        self.db.close()
-
-        self.uname = self.usernameReg.get()
-        self.passw = self.passwordReg.get()
-        self.passconf = self.cp.get()
-        self.emailconf = self.email.get()
-        null = "0"
-
-        if self.uname == "" or self.passw == "" or self.passconf == "" or self.emailconf == "":
-            messagebox.showwarning("Error!", "Cannot have empty field")
-        elif self.passconf != self.passw:
-            messagebox.showwarning("Error", "Passwords do not match! Try again.")
-        elif "@gatech.edu" not in self.emailconf:
-            messagebox.showwarning("Error!", "Please enter valid email")
-        else:
-            fruit = True
-            for each in information:
-                if self.emailconf in each:
-                    messagebox.showwarning("Error", "Email already in system! Please try again!")
-                elif self.uname in each:
-                    messagebox.showwarning("Error", "Username already in system. Please try again!")
-                    fruit = False
-                if fruit:
-                    self.Connect()
-                    self.sql2 = "INSERT INTO STUDENT(Username, GT_Email, Password, Year, Major_Name) VALUES(%s,%s,%s,%s,%s)"
-                    self.cursor.execute(self.sql2,(self.uname,self.emailconf,self.passw,null,null))
-                    self.db.commit()
-                    self.db.close()
-                    messagebox.showwarning("Successful Registration!", "Please log in!")
-                    self.showWin()
+##    def loginCheck(self):
+##        self.sql = "SELECT Username,GT_Email,Password FROM STUDENT"
+##
+##        self.cursor.execute(self.sql)
+##        information = self.cursor.fetchall()
+##        self.db.close()
+##
+##        self.uname = self.usernameReg.get()
+##        self.passw = self.passwordReg.get()
+##        self.passconf = self.cp.get()
+##        self.emailconf = self.email.get()
+##        null = "0"
+##
+##        if self.uname == "" or self.passw == "" or self.passconf == "" or self.emailconf == "":
+##            messagebox.showwarning("Error!", "Cannot have empty field")
+##        elif self.passconf != self.passw:
+##            messagebox.showwarning("Error", "Passwords do not match! Try again.")
+##        elif "@gatech.edu" not in self.emailconf:
+##            messagebox.showwarning("Error!", "Please enter valid email")
+##        else:
+##            fruit = True
+##            for each in information:
+##                if self.emailconf in each:
+##                    messagebox.showwarning("Error", "Email already in system! Please try again!")
+##                elif self.uname in each:
+##                    messagebox.showwarning("Error", "Username already in system. Please try again!")
+##                    fruit = False
+##                if fruit:
+##                    self.Connect()
+##                    self.sql2 = "INSERT INTO STUDENT(Username, GT_Email, Password, Year, Major_Name) VALUES(%s,%s,%s,%s,%s)"
+##                    self.cursor.execute(self.sql2,(self.uname,self.emailconf,self.passw,null,null))
+##                    self.db.commit()
+##                    self.db.close()
+##                    messagebox.showwarning("Successful Registration!", "Please log in!")
+##                    self.showWin()
                     
             
     def LoginCheck(self):
->>>>>>> refs/remotes/origin/master
         self.Connect()
 
         self.userLogin = self.usernameEntry.get()
         self.passLogin = self.passwordEntry.get()
 
-<<<<<<< HEAD
         self.cursor = self.db.cursor()
         self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
         info = self.cursor.execute(self.sql, (self.userLogin, self.passLogin))
@@ -202,7 +184,6 @@ class masterGUI:
     def mainPageOpen(self):
         self.win.withdraw()
         self.MainPage()
-=======
         self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
 
         try:
@@ -216,7 +197,6 @@ class masterGUI:
                 #self.someFunction
         except:
             print("Error, try new login! Invalid username/password combo.")
->>>>>>> refs/remotes/origin/master
 
 
     def MainPage(self):
@@ -231,7 +211,6 @@ class masterGUI:
         self.titleReg = Label(self.smallFrame, text="Main Page", width=30, padx=5, pady=5, fg="blue",
                               font=("Helvetica", 16))
         self.titleReg.grid(row=0, column=1)
-<<<<<<< HEAD
         self.title = Entry(self.smallFrame, width=30)
         self.title.grid(row=1, column=1, sticky=W)
         titleLB = Label(self.smallFrame, text="Title")
@@ -547,19 +526,8 @@ class masterGUI:
         self.applicationPage.withdraw()
         self.MePage()
 
-
-
-
-
-
-
-
-
-
-=======
         self.usernameReg = Entry(self.smallFrame, width=50)
         
->>>>>>> refs/remotes/origin/master
 
 
 

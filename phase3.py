@@ -554,11 +554,19 @@ class masterGUI:
         self.titleAdmin = Label(self.bigFrame, text="Choose Functionality")
         self.titleAdmin.grid(row=1, column=2, columnspan=2, padx=150, sticky=N)
 
+<<<<<<< HEAD
         self.viewAppBtn = Button(self.smallFrame, width=3, text="View Applications", padx=80,
                                      pady=10, command = self.ViewApplication)
         self.viewAppBtn.grid(row=2, column=2, sticky=E)
         self.myAppBtn = Button(self.smallFrame, width=3, text="View Popular Project Report", padx=80,
                                pady=10, command = self.showApplicationPage)
+=======
+        self.viewAppBtn = Button(self.smallFrame, width=1, text="View Applications", padx=80,
+                                     pady=20, command = self.ViewApplication)
+        self.viewAppBtn.grid(row=2, column=2, sticky=E)
+        self.myAppBtn = Button(self.smallFrame, width=1, text="View popular project report", padx=80,
+                               pady=50, command = self.showApplicationPage)
+>>>>>>> origin/master
         self.myAppBtn.grid(row=3, column=2, sticky=E)
         self.viewAppReportBtn = Button(self.smallFrame, width=3, text="View Application Report", padx=80, pady=10) #command = self.viewAppReportFunction
         self.viewAppReportBtn.grid(row=4, column=2, sticky=E)

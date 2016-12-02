@@ -247,8 +247,6 @@ class masterGUI:
         self.Connect()
         self.cursor = self.db.cursor()
 
-        print(self.table.get_children())
-
         if self.table.get_children() != ():
             self.table.delete(self.table.get_children())
 
@@ -292,6 +290,9 @@ class masterGUI:
                                      " AND C.Designation_Name = CASE WHEN (%s != '') THEN %s ELSE C.Designation_Name END" \
                                      " AND CC.Category_Name = CASE WHEN (%s != '') THEN %s ELSE CC.Category_Name END "
 
+
+
+
         if self.projCourseSelection.get() == 0:
             self.cursor.execute(self.SQL_ApplyFilterProject, (
             self.title.get(), self.title.get(), majorList, self.majorFilter, yearList, self.yearFilter,
@@ -302,8 +303,6 @@ class masterGUI:
             self.designationFilter, self.designationFilter, self.categoryFilter, self.categoryFilter))
 
         results = self.cursor.fetchall()
-        print(results)
-        print(results[0][0])
 
         self.newList = []
         self.currList = []
@@ -316,6 +315,104 @@ class masterGUI:
 
         for row in self.newList:
             self.table.insert('', 'end', value=row)
+
+        self.table.bind("<Double-1>", self.showItem)
+
+
+    def showItem(self, event):
+        currItem = self.table.focus()
+        itemDict = self.table.item(currItem)
+        projInfo= itemDict.get('values')
+        projOrCourse = projInfo[1]
+        self.showName = projInfo[0]
+
+
+
+        if projOrCourse == "Project":
+            self.mainPage.withdraw()
+            self.ViewProject()
+        else:
+            self.mainPage.withdraw()
+            self.ViewCourse()
+
+
+    def ViewProject(self):
+
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.viewProject = Toplevel()
+
+        self.bigFrame = Frame(self.viewProject)
+        self.bigFrame.grid(row=1, column=0)
+        self.smallFrame = Frame(self.bigFrame)
+        self.smallFrame.grid(row=0, column=0)
+
+
+        self.SQL_GetProjectSpecs = " SELECT Advisor_Name, Advisor_Email, Description, Designation_Name, P_Est_Num_Students" \
+                                   " FROM PROJECT AS P" \
+                                   " WHERE P.Project_Name = %s"
+        self.cursor.execute(self.SQL_GetProjectSpecs, (self.showName))
+        self.projectSpecs = self.cursor.fetchall()
+
+        projectInstructor = self.projectSpecs[0][0]
+        projectInstructorEmail = self.projectSpecs[0][1]
+        projectDescription = self.projectSpecs[0][2]
+        projectDesignation = self.projectSpecs[0][3]
+        projectNumStudents = self.projectSpecs[0][4]
+
+        newProjectDescription = re.sub("(.{60})", "\\1\n", projectDescription, 0, re.DOTALL)
+
+
+
+        projectRequirementsStr = ""
+        projectCategoriesStr = ""
+        self.SQL_GetProjectRequirements = " SELECT DISTINCT(Requirements)" \
+                                          " FROM PROJECT AS P LEFT OUTER JOIN PROJECT_REQUIREMENTS AS PR ON P.Project_Name = PR.Project_Name" \
+                                          " WHERE P.Project_Name = %s"
+        self.cursor.execute(self.SQL_GetProjectRequirements, (self.showName))
+        self.projectRequirements = self.cursor.fetchall()
+        for item in self.projectRequirements:
+            projectRequirementsStr += re.sub('[(),\']', '', str(item)) #Regex expression to remove all unwanted chars from the string
+            print(projectRequirementsStr)
+            if item != self.projectRequirements[len(self.projectRequirements) - 1]:
+                projectRequirementsStr += ", "
+
+
+        self.SQL_GetProjectCategories = " SELECT DISTINCT(Category_Name)" \
+                                        " FROM PROJECT AS P LEFT OUTER JOIN PROJECT_CATEGORY AS PC ON P.Project_Name = PC.Project_Name" \
+                                        " WHERE P.Project_Name = %s"
+        self.cursor.execute(self.SQL_GetProjectCategories, (self.showName))
+        self.projectCategories = self.cursor.fetchall()
+        for item in self.projectCategories:
+            projectCategoriesStr += re.sub('[(),\']', '', str(item))
+            if item != self.projectCategories[len(self.projectCategories) - 1]:
+                projectCategoriesStr += ", "
+
+
+        self.projectNameLb = Label(self.smallFrame, text = self.showName)
+        self.projectNameLb.grid(row = 0, column = 2, padx = 20)
+
+        self.projectAdvisorLb = Label(self.smallFrame, text = "Advisor: " + projectInstructor + " (" + projectInstructorEmail + ")")
+        self.projectAdvisorLb.grid(row = 1, column = 2)
+
+        #self.projectDescriptionLb = Label(self.smallFrame, text = "Description: " + newProjectDescription)
+        #self.projectDescriptionLb.grid(row = 2, column = 2, sticky = W)
+
+        self.projectDesignationLb = Label(self.smallFrame, text = "Designation: " + projectDesignation)
+        self.projectDesignationLb.grid(row = 8, column = 2)
+
+
+        self.projectRequirementsLb = Label(self.smallFrame, text = "Requirements: " + projectRequirementsStr)
+        self.projectRequirementsLb.grid(row = 9, column = 2)
+
+        self.projectCategoriesLb = Label(self.smallFrame, text = "Categories: " + projectCategoriesStr)
+        self.projectCategoriesLb.grid(row = 10, column = 2)
+
+        self.projectNumStudentsLb = Label(self.smallFrame, text = "Estimated number of students: " + str(projectNumStudents))
+        self.projectNumStudentsLb.grid(row = 11, column = 2)
+
+
 
     def clearFilter(self):
         self.choiceVar.set("Please Select")
@@ -472,6 +569,13 @@ class masterGUI:
     def backToMePage(self):
         self.applicationPage.withdraw()
         self.MePage()
+
+
+    '''
+    self.SQL_ApplyFilterAdmin = " SELECT *" \
+                                    " FROM PROJECT AS P LEFT OUTER JOIN PROJECT_CATEGORY AS PR ON P.Project_Name = PR.Project_Name" \
+                                    " WHERE PR.Requirements IN %s"
+    '''
 
 
 win = Tk()

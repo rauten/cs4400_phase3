@@ -175,13 +175,23 @@ class masterGUI:
         info = self.cursor.execute(self.sql, (self.userLogin, self.passLogin))
         print(info)
             #info2 = self.cursor.fetchall()
+        self.yes=str(1)
+        self.adcheck = "SELECT * FROM USER WHERE Username = %s AND Password = %s AND isAdmin= %s"
+        admin=self.cursor.execute(self.adcheck, (self.userLogin, self.passLogin,str(1)))
+        print(admin)
         if info == 0:
             messagebox.showwarning("Error! Data entered not registered username/password combination.")
-        else:
+        elif admin==0:
             messagebox.showwarning("Success! Login Successful!")
             self.mainPageOpen() #Open the main page
+        elif admin==1:
+            messagebox.showwarning("Success! Login Successful!")
+            self.
+            
 
-    def mainPageOpen(self):
+            
+
+    def mainPageOpen(self):9
         self.win.withdraw()
         self.MainPage()
         self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
@@ -565,6 +575,7 @@ class masterGUI:
         self.l1 = Label(self.smallFrame, text="Application", width=30, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
         self.l1.grid(row=0, column=1)
 
+<<<<<<< Updated upstream
         self.Connect()
         self.cursor = self.db.cursor()
 
@@ -594,6 +605,20 @@ class masterGUI:
         self.rejectBtn.grid(row=10, column=9)
         
         
+=======
+##    def ViewPopularProject(self):
+##        self.viewPopularproject=Toplevel()
+##        self.bigFrame=Frame(self.viewPopularproject)
+##        self.bigFrame.grid(row=1, column=0)
+##        self.smallframe=Frame(self.bigFrame)
+##        self.smallframe.grid(row=0,column=0)
+##
+##        self.Connect()
+##        self.cursor=self.db.cursor()
+##
+##        self.SQL_PopulateProjects=
+
+>>>>>>> Stashed changes
 
 
 

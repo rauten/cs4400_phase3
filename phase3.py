@@ -542,30 +542,29 @@ class masterGUI:
         self.viewApplication.withdraw()
         self.AdminViewFunct()
 
+    def backToAdminViewFunct2(self):
+        self.viewPopularproject.withdraw()
+        self.AdminViewFunct()
+        
+
     def AdminViewFunct(self):
         self.adminPage = Toplevel()
 
+        
         self.bigFrame = Frame(self.adminPage)
-        self.bigFrame.grid(row=1, column=0)
+        self.bigFrame.grid(row=0, column=0)
         self.smallFrame = Frame(self.adminPage)
-        self.smallFrame.grid(row=0, column=0)
+        self.smallFrame.grid(row=1, column=0)
 
 
-        self.titleAdmin = Label(self.bigFrame, text="Choose Functionality")
-        self.titleAdmin.grid(row=1, column=2, columnspan=2, padx=150, sticky=N)
+        self.titleAdmin = Label(self.bigFrame, text="Choose Functionality", fg="blue", font=("Helvetica", 16))
+        self.titleAdmin.grid(row=1, column=2, columnspan=2, padx=150,pady=5, sticky=N)
 
-        self.viewAppBtn = Button(self.smallFrame, width=3, text="View Applications", padx=80,
-                                     pady=10, command = self.ViewApplication)
+        self.viewAppBtn = Button(self.smallFrame, width=3, text="View Applications", padx=80,pady=10, command = self.ViewApplication)
         self.viewAppBtn.grid(row=2, column=2, sticky=E)
-        self.myAppBtn = Button(self.smallFrame, width=3, text="View Popular Project Report", padx=80,
-                               pady=10, command = self.showApplicationPage)
-
-        self.viewAppBtn = Button(self.smallFrame, width=1, text="View Applications", padx=80,
-                                     pady=20, command = self.ViewApplication)
-        self.viewAppBtn.grid(row=2, column=2, sticky=E)
-        self.myAppBtn = Button(self.smallFrame, width=1, text="View popular project report", padx=80,
-                               pady=50, command = self.showApplicationPage)
+        self.myAppBtn = Button(self.smallFrame, width=3, text="View Popular Project Report", padx=80,pady=10, command = self.ViewPopularProject)
         self.myAppBtn.grid(row=3, column=2, sticky=E)
+        
         self.viewAppReportBtn = Button(self.smallFrame, width=3, text="View Application Report", padx=80, pady=10) #command = self.viewAppReportFunction
         self.viewAppReportBtn.grid(row=4, column=2, sticky=E)
         self.addProjBtn = Button(self.smallFrame, width=3, text="Add a Project", padx=80, pady=10) #command = self.AddProjectFunction
@@ -668,7 +667,37 @@ class masterGUI:
             messagebox.showinfo("Your status is not matching")
           
             
-            
+    def ViewPopularProject(self):
+        self.adminPage.withdraw()
+        
+        self.viewPopularproject=Toplevel()
+        self.bigFrame2=Frame(self.viewPopularproject)
+        self.bigFrame2.grid(row=1, column=0)
+        self.smallframe2=Frame(self.viewPopularproject)
+        self.smallframe2.grid(row=0,column=0)
+
+        self.Connect()
+        self.cursor=self.db.cursor()
+
+        self.SQL_PopulateViewPopularProjects= "SELECT DISTINCT(Project_Name), COUNT(Project_Name)"\
+                                              " FROM APPLY"\
+                                              " ORDER BY COUNT(*) DESC"\
+                                              " LIMIT 10"
+        self.cursor.execute(self.SQL_PopulateViewPopularProjects)
+        results=self.cursor.fetchall()
+        print(results)
+
+        self.dataColumns = ["Project","# of Applicants"]
+        self.PopProjView = ttk.Treeview(self.smallframe2, columns=self.dataColumns, show = 'headings')
+        self.PopProjView.grid(row=1, column=0, sticky=W, columnspan=2)
+        self.PopProjView.heading('#1', text="Project")
+        self.PopProjView.heading('#2', text="# of Applicants")
+
+        self.backBtn = Button(self.smallframe2, text="Back", command=self.backToAdminViewFunct2)
+        self.backBtn.grid(row=6, column=1, sticky=W)
+
+        for row in results:
+            self.PopProjView.insert('', 'end', value = row)    
             
 
 

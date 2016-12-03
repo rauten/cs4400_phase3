@@ -805,8 +805,26 @@ class masterGUI:
         self.backBtn.grid(row=6, column=1, sticky=W)
 
         for row in results:
-            self.PopProjView.insert('', 'end', value = row)    
-            
+            self.PopProjView.insert('', 'end', value = row)
+
+
+    def ViewApplicatonReport(self):
+        self.AppReport = Toplevel()
+        self.titleAR = Label(self.AppReport, text="Application Report", fg="blue", font=("Helvetica", 16))
+        self.titleAR.grid(row=1, column=1)
+
+        self.bigFrame3 = Frame(self.AppReport)
+        selff.bigFrame3.grid(row=2, column=1)
+        self.smallFrame2 = Frame(self.AppReport)
+        self.smallFrame2.grid(row2, column=1)
+
+        self.Connect()
+        self.cursor2 - self.db.cursor()
+
+        self.SQL_PopulateViewApplication= "SELECT DISTINCT (Project_Name), 
+
+        
+ 
 
 
 

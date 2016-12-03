@@ -266,7 +266,7 @@ class masterGUI:
         else:
             yearList = requirementsList
 
-        self.SQL_ApplyFilterProject = "SELECT DISTINCT(P.Project_Name) FROM PROJECT AS P LEFT OUTER JOIN PROJECT_CATEGORY AS PC ON P.Project_Name = PC.Project_Name" \
+        self.SQL_ApplyFilterProject = " SELECT DISTINCT(P.Project_Name) FROM PROJECT AS P LEFT OUTER JOIN PROJECT_CATEGORY AS PC ON P.Project_Name = PC.Project_Name" \
                                       " LEFT OUTER JOIN PROJECT_REQUIREMENTS AS PR ON P.Project_Name = PR.Project_Name" \
                                       " WHERE P.Project_Name = CASE WHEN (%s != '') THEN %s ELSE P.Project_Name END" \
                                       " AND EXISTS( SELECT * " \
@@ -278,15 +278,8 @@ class masterGUI:
                                       " AND P.Designation_Name = CASE WHEN (%s != '') THEN %s ELSE P.Designation_Name END" \
                                       " AND PC.Category_Name = CASE WHEN (%s != '') THEN %s ELSE PC.Category_Name END "
 
-        self.SQL_ApplyFilterCourse = "SELECT DISTINCT(C.Course_Name) FROM COURSE AS C LEFT OUTER JOIN COURSE_CATEGORY AS CC ON C.Course_Name = CC.Course_Name" \
-                                     " LEFT OUTER JOIN COURSE_REQUIREMENTS AS CR ON C.Course_Name = CR.Course_Name" \
+        self.SQL_ApplyFilterCourse = " SELECT DISTINCT(C.Course_Name) FROM COURSE AS C LEFT OUTER JOIN COURSE_CATEGORY AS CC ON C.Course_Name = CC.Course_Name" \
                                      " WHERE C.Course_Name = CASE WHEN (%s != '') THEN %s ELSE C.Course_Name END" \
-                                     " AND EXISTS( SELECT * " \
-                                     " FROM COURSE_REQUIREMENTS AS COR" \
-                                     " WHERE COR.Course_Name = C.Course_Name AND ((COR.Requirements IN %s) OR (COR.Requirements IS NULL AND %s = '')))" \
-                                     " AND EXISTS( SELECT *" \
-                                     " FROM COURSE_REQUIREMENTS AS COR" \
-                                     " WHERE COR.Course_Name = C.Course_Name AND ((COR.Requirements IN %s) OR (COR.Requirements IS NULL AND %s = '')))" \
                                      " AND C.Designation_Name = CASE WHEN (%s != '') THEN %s ELSE C.Designation_Name END" \
                                      " AND CC.Category_Name = CASE WHEN (%s != '') THEN %s ELSE CC.Category_Name END "
 
@@ -299,8 +292,7 @@ class masterGUI:
             self.designationFilter, self.designationFilter, self.categoryFilter, self.categoryFilter))
         elif self.projCourseSelection.get() == 1:
             self.cursor.execute(self.SQL_ApplyFilterCourse, (
-            self.title.get(), self.title.get(), majorList, self.majorFilter, yearList, self.yearFilter,
-            self.designationFilter, self.designationFilter, self.categoryFilter, self.categoryFilter))
+            self.title.get(), self.title.get(), self.designationFilter, self.designationFilter, self.categoryFilter, self.categoryFilter))
 
         results = self.cursor.fetchall()
 
@@ -317,6 +309,16 @@ class masterGUI:
             self.table.insert('', 'end', value=row)
 
         self.table.bind("<Double-1>", self.showItem)
+
+
+        currItem = self.table.focus()
+        itemDict = self.table.item(currItem)
+        courseInfo = itemDict.get('values')
+
+
+
+
+
 
 
     def showItem(self, event):
@@ -396,8 +398,8 @@ class masterGUI:
         self.projectAdvisorLb = Label(self.smallFrame, text = "Advisor: " + projectInstructor + " (" + projectInstructorEmail + ")")
         self.projectAdvisorLb.grid(row = 1, column = 2)
 
-        #self.projectDescriptionLb = Label(self.smallFrame, text = "Description: " + newProjectDescription)
-        #self.projectDescriptionLb.grid(row = 2, column = 2, sticky = W)
+        self.projectDescriptionLb = Label(self.smallFrame, text = "Description: " + newProjectDescription)
+        self.projectDescriptionLb.grid(row = 2, column = 2, sticky = W, pady = 10)
 
         self.projectDesignationLb = Label(self.smallFrame, text = "Designation: " + projectDesignation)
         self.projectDesignationLb.grid(row = 8, column = 2)
@@ -412,6 +414,12 @@ class masterGUI:
         self.projectNumStudentsLb = Label(self.smallFrame, text = "Estimated number of students: " + str(projectNumStudents))
         self.projectNumStudentsLb.grid(row = 11, column = 2)
 
+        self.backViewProjectBtn = Button(self.smallFrame, text = "Back", command = self.backToMainPageFromViewProject)
+        self.backViewProjectBtn.grid(row = 12, column = 2)
+
+    def backToMainPageFromViewProject(self):
+        self.viewProject.withdraw()
+        self.MainPage()
 
 
     def clearFilter(self):
@@ -565,6 +573,27 @@ class masterGUI:
 
         for row in results:
             self.myAppsTreeView.insert('', 'end', value=row)
+
+
+    def ViewCourse(self):
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.viewCourse = Toplevel()
+
+        self.bigFrame = Frame(self.applicationPage)
+        self.bigFrame.grid(row=1, column=0)
+        self.smallFrame = Frame(self.bigFrame)
+        self.smallFrame.grid(row=0, column=0)
+
+
+        self.SQL_GetCourseSpecs = " SELECT Course_Name, Instructor, Designation_Name, C_Est_Num_Students" \
+                                  " FROM COURSE" \
+                                  " WHERE Course_Name = %s"
+
+
+
+
 
     def backToMePage(self):
         self.applicationPage.withdraw()

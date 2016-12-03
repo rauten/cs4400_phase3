@@ -107,7 +107,7 @@ class masterGUI:
         self.cursor = self.db.cursor()
         self.SQL_RegisterCheck = "SELECT Username FROM USER WHERE Username = %s"
         existUser = self.cursor.execute(self.SQL_RegisterCheck,(self.usernameEntry.get()))
-        print(existUser)
+        
         null2 = "0"
         if self.confirmPassword.get() != self.passwordReg.get() :
             messagebox.showwarning("Error", "Passwords do not match")
@@ -173,12 +173,12 @@ class masterGUI:
         self.cursor = self.db.cursor()
         self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
         info = self.cursor.execute(self.sql, (self.userLogin, self.passLogin))
-        print(info)
+        
             #info2 = self.cursor.fetchall()
         self.yes=str(1)
         self.adcheck = "SELECT * FROM USER WHERE Username = %s AND Password = %s AND isAdmin= %s"
         admin=self.cursor.execute(self.adcheck, (self.userLogin, self.passLogin,str(1)))
-        print(admin)
+        
         if info == 0:
             messagebox.showwarning("Error! Data entered not registered username/password combination.")
         elif admin==0:
@@ -358,8 +358,7 @@ class masterGUI:
             self.cursor.execute(self.SQL_ApplyFilterCourse, (self.title.get(), self.title.get(), majorList, self.majorFilter, yearList, self.yearFilter, self.designationFilter, self.designationFilter, self.categoryFilter, self.categoryFilter))
 
         results = self.cursor.fetchall()
-        print(results)
-        print(results[0][0])
+     
 
         self.newList = []
         self.currList = []
@@ -545,6 +544,10 @@ class masterGUI:
     def backToAdminViewFunct2(self):
         self.viewPopularproject.withdraw()
         self.AdminViewFunct()
+
+    def backToAdminViewFunct3(self):
+        self.AppReport.withdraw()
+        self.AdminViewFunct()
         
 
     def AdminViewFunct(self):
@@ -565,7 +568,7 @@ class masterGUI:
         self.myAppBtn = Button(self.smallFrame, width=3, text="View Popular Project Report", padx=80,pady=10, command = self.ViewPopularProject)
         self.myAppBtn.grid(row=3, column=2, sticky=E)
         
-        self.viewAppReportBtn = Button(self.smallFrame, width=3, text="View Application Report", padx=80, pady=10) #command = self.viewAppReportFunction
+        self.viewAppReportBtn = Button(self.smallFrame, width=3, text="View Application Report", padx=80, pady=10, command = self.ViewApplicationReport)
         self.viewAppReportBtn.grid(row=4, column=2, sticky=E)
         self.addProjBtn = Button(self.smallFrame, width=3, text="Add a Project", padx=80, pady=10) #command = self.AddProjectFunction
         self.addProjBtn.grid(row=5, column=2, sticky=E)
@@ -615,10 +618,9 @@ class masterGUI:
         self.rejectBtn = Button(self.smallFrame, text = "Reject", command = self.changeStatusToRejected)
         self.rejectBtn.grid(row=10, column=9)
         
-        print(results)
         for row in results:
             self.AppsView.insert('', 'end', value = row)
-            print(row)
+            
             
     def changeStatusToAccepted(self):
         self.Connect()
@@ -636,7 +638,6 @@ class masterGUI:
         appInfo = itemDict.get("values")
         statusA = appInfo[3]
         userNameA = appInfo[4]
-        print(statusA)
         projectName = appInfo[0]
         if statusA == "Pending":
             self.cursor.execute(self.SQL_UpdateStatus, (projectName, userNameA))
@@ -659,7 +660,6 @@ class masterGUI:
         appInfo = itemDict.get("values")
         statusA = appInfo[3]
         userNameA = appInfo[4]
-        print(statusA)
         projectName = appInfo[0]
         if statusA == "Pending":
             self.cursor.execute(self.SQL_UpdateStatus, (projectName, userNameA))
@@ -676,6 +676,9 @@ class masterGUI:
         self.smallframe2=Frame(self.viewPopularproject)
         self.smallframe2.grid(row=0,column=0)
 
+        projTitle = Label(self.smallframe2, text="Popular Project", width=20, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
+        self.l1.grid(row=0, column=1)
+
         self.Connect()
         self.cursor=self.db.cursor()
 
@@ -685,7 +688,7 @@ class masterGUI:
                                               " LIMIT 10"
         self.cursor.execute(self.SQL_PopulateViewPopularProjects)
         results=self.cursor.fetchall()
-        print(results)
+        
 
         self.dataColumns = ["Project","# of Applicants"]
         self.PopProjView = ttk.Treeview(self.smallframe2, columns=self.dataColumns, show = 'headings')
@@ -700,23 +703,44 @@ class masterGUI:
             self.PopProjView.insert('', 'end', value = row)
 
 
-    def ViewApplicatonReport(self):
+    def ViewApplicationReport(self):
         self.AppReport = Toplevel()
-        self.titleAR = Label(self.AppReport, text="Application Report", fg="blue", font=("Helvetica", 16))
-        self.titleAR.grid(row=1, column=1)
 
         self.bigFrame3 = Frame(self.AppReport)
-        selff.bigFrame3.grid(row=2, column=1)
+        self.bigFrame3.grid(row=0, column=1)
         self.smallFrame2 = Frame(self.AppReport)
-        self.smallFrame2.grid(row2, column=1)
+        self.smallFrame2.grid(row=1, column=1)
+
+        self.titleAR = Label(self.smallFrame2, text="Application Report", fg="blue", font=("Helvetica", 16))
+        self.titleAR.grid(row=0, column=1)
 
         self.Connect()
-        self.cursor2 - self.db.cursor()
+        self.cursor = self.db.cursor()
 
-                
- 
+        self.SQL_Project1 = "SELECT Status, COUNT(*) AS Count" \
+                            " FROM APPLY" \
+                            " GROUP BY Status"
+        self.cursor.execute(self.SQL_Project1)
+        results=self.cursor.fetchall()
 
+        self.SQL_Project2 = "SELECT Project_Name, COUNT(*) AS Count" \
+                            " FROM APPLY" \
+                            " GROUP By Project_Name"
+        self.cursor.execute(self.SQL_Project2)
+        results2 = self.cursor.fetchall()
+        print(results2)
 
+        
+        self.dataColumns2 = ["Project", "# of Applicants", "Accepance Rate", "Top 3 Major"]
+        self.AppReportView = ttk.Treeview(self.bigFrame3, columns=self.dataColumns2, show='headings')
+        self.AppReportView.grid(row=1, column=0, sticky=W, columnspan=2)
+        self.AppReportView.heading('#1', text="Project")
+        self.AppReportView.heading('#2', text="# of Applicants")
+        self.AppReportView.heading('#3', text="Acceptance Rate")
+        self.AppReportView.heading('#4', text="top 3 Majors")
+
+        self.backBtn2 = Button(self.smallFrame2, text="Back", command=self.backToAdminViewFunct3)
+        self.backBtn2.grid(row=6, column=1, sticky=W)
 
 
 

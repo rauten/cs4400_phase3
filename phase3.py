@@ -44,30 +44,23 @@ class masterGUI:
         self.passwordEntry.grid(row=2, column=1, padx=5, pady=5)
 
         # Initialize buttons
-        self.btRegister = Button(self.win, width=10, text="Register", padx=5, pady=5, command=self.addField)
-        self.btRegister.grid(row=3, column=1, sticky=E)
-        self.btLogin = Button(self.win, width=5, padx=5, pady=5, text="Login", command=self.loginCheck)
-        self.btLogin.grid(row=3, column=1, sticky=W)
+        self.btRegister = Button(self.win, width = 10, text = "Register", padx=5, pady=5, command = self.RegisterPage)
+        self.btRegister.grid(row = 3, column = 1, sticky=E)
+        self.btLogin = Button(self.win, width = 5, padx=5, pady=5, text = "Login", command = self.LoginCheck)
+        self.btLogin.grid(row = 3, column = 1, sticky=W)
+
+    def showWin(self):
+        self.win.deiconify()
+        self.registerpage.withdraw()
 
     def registerOpen(self):
         self.win.withdraw()
         self.RegisterPage()
 
-    def addField(self):
-        ent = Entry(self.win, width=20)
-        ent.grid(row=self.rows, column=1)
-        self.categoryList.append(ent)
-        self.rows = self.rows + 1
-        self.btLogin.grid_forget()
-        self.btLogin.grid(row=self.rows, column=1, sticky=W)
-
-        self.btRegister.grid_forget()
-        self.btRegister.grid(row=self.rows, column=1, sticky=E)
-
     def Connect(self):
         try:
-            self.db = pymysql.connect(host="academic-mysql.cc.gatech.edu", passwd="Z8IHtiyg", user="cs4400_Team_9",
-                                      db="cs4400_Team_9")
+            self.db = pymysql.connect(host="academic-mysql.cc.gatech.edu",passwd="Z8IHtiyg",user="cs4400_Team_9",db="cs4400_Team_9")
+            self.cursor = self.db.cursor()
         except:
             messagebox.showinfo("Connection error. Check your Internet Connection and/or code!")
 
@@ -99,7 +92,7 @@ class masterGUI:
         self.confirmPassword = Entry(self.smallFrame, width=50)
         self.confirmPassword.grid(row=4, column=1, sticky=E, pady=5)
 
-        regButton = Button(self.bigFrame, text="Create", width=10, bg="white", command=self.registerNew)
+        regButton = Button(self.bigFrame, text="Create", width=10, bg="white", command = self.registerNew)
         regButton.grid(row=7, column=0)
 
     def registerNew(self):  # Pass in username
@@ -108,8 +101,8 @@ class masterGUI:
         self.SQL_RegisterCheck = "SELECT Username FROM USER WHERE Username = %s"
         existUser = self.cursor.execute(self.SQL_RegisterCheck, (self.usernameEntry.get()))
         print(existUser)
-
-        if self.confirmPassword.get() != self.passwordReg.get():
+        null2 = "0"
+        if self.confirmPassword.get() != self.passwordReg.get() :
             messagebox.showwarning("Error", "Passwords do not match")
         elif self.usernameReg.get() == "":
             messagebox.showwarning("Error", "Please enter a username")
@@ -118,12 +111,53 @@ class masterGUI:
         elif existUser > 0:
             messagebox.showwarning("Error", "Username already exists!")
         else:
-            self.SQL_RegisterUser = "INSERT INTO STUDENT (Username, GT_Email, Password) VALUES (%s, %s, %s)"
-            self.cursor.execute(self.SQL_RegisterUser,
-                                (self.usernameReg.get(), self.email.get(), self.passwordReg.get()))
-            self.mainPageOpen()  # Change this to login page
+            self.SQL_RegisterStudent = "INSERT INTO STUDENT (Username, GT_Email, Password) VALUES (%s, %s, %s)"
+            self.cursor.execute(self.SQL_RegisterStudent, (self.usernameReg.get(), self.email.get(), self.passwordReg.get()))
+            self.SQL_User = "INSERT INTO USER (Username,Password,isAdmin) VALUES(%s, %s, %s)"
+            self.cursor.execute(self.SQL_User, (self.usernameReg.get(), self.passwordReg.get(), null2))
+            self.db.commit()
+            self.db.close()
+            self.mainPageOpen() #Change this to login page
 
-    def loginCheck(self):
+
+##    def loginCheck(self):
+##        self.sql = "SELECT Username,GT_Email,Password FROM STUDENT"
+##
+##        self.cursor.execute(self.sql)
+##        information = self.cursor.fetchall()
+##        self.db.close()
+##
+##        self.uname = self.usernameReg.get()
+##        self.passw = self.passwordReg.get()
+##        self.passconf = self.cp.get()
+##        self.emailconf = self.email.get()
+##        null = "0"
+##
+##        if self.uname == "" or self.passw == "" or self.passconf == "" or self.emailconf == "":
+##            messagebox.showwarning("Error!", "Cannot have empty field")
+##        elif self.passconf != self.passw:
+##            messagebox.showwarning("Error", "Passwords do not match! Try again.")
+##        elif "@gatech.edu" not in self.emailconf:
+##            messagebox.showwarning("Error!", "Please enter valid email")
+##        else:
+##            fruit = True
+##            for each in information:
+##                if self.emailconf in each:
+##                    messagebox.showwarning("Error", "Email already in system! Please try again!")
+##                elif self.uname in each:
+##                    messagebox.showwarning("Error", "Username already in system. Please try again!")
+##                    fruit = False
+##                if fruit:
+##                    self.Connect()
+##                    self.sql2 = "INSERT INTO STUDENT(Username, GT_Email, Password, Year, Major_Name) VALUES(%s,%s,%s,%s,%s)"
+##                    self.cursor.execute(self.sql2,(self.uname,self.emailconf,self.passw,null,null))
+##                    self.db.commit()
+##                    self.db.close()
+##                    messagebox.showwarning("Successful Registration!", "Please log in!")
+##                    self.showWin()
+                    
+            
+    def LoginCheck(self):
         self.Connect()
 
         self.userLogin = self.usernameEntry.get()
@@ -133,16 +167,38 @@ class masterGUI:
         self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
         info = self.cursor.execute(self.sql, (self.userLogin, self.passLogin))
         print(info)
-        # info2 = self.cursor.fetchall()
+        #info2 = self.cursor.fetchall()
+        self.yes=str(1)
+        self.adcheck = "SELECT * FROM USER WHERE Username = %s AND Password = %s AND isAdmin= %s"
+        admin=self.cursor.execute(self.adcheck, (self.userLogin, self.passLogin,str(1)))
+        print(admin)
         if info == 0:
             messagebox.showwarning("Error! Data entered not registered username/password combination.")
-        else:
+        elif admin==0:
             messagebox.showwarning("Success! Login Successful!")
-            self.mainPageOpen()  # Open the main page
+            self.mainPageOpen() #Open the main page
+        elif admin==1:
+            messagebox.showwarning("Success! Login Successful!")
+            self.AdminViewFunct()#open functionality page
+
 
     def mainPageOpen(self):
         self.win.withdraw()
         self.MainPage()
+        self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
+
+        try:
+            self.cursor.execute(self.sql,(self.userLogin, self.passLogin))
+            info2 = self.cursor.fetchall()
+            if len(info2==0):
+                messagebox.showwarning("Error! Data entered not registered username/password combination.")
+            else:
+                messagebox.showwarning("Success! Login Successful!")
+                self.win.withdraw()
+                #self.someFunction
+        except:
+            print("Error, try new login! Invalid username/password combo.")
+
 
     def MainPage(self):
         self.mainPage = Toplevel()
@@ -568,8 +624,8 @@ class masterGUI:
         self.myAppsTreeView.heading('#2', text="Project Name")
         self.myAppsTreeView.heading('#3', text="Status")
 
-        self.backBtnAppPage = Button(self.smallFrame, text="Back", command=self.backToMePage)
-        self.backBtnAppPage.grid(row=10, column=2)
+        self.backBtnAppPage = Button(self.smallFrame, text = "Back", command = self.backToMePage)
+        self.backBtnAppPage.grid(row = 10, column = 2)
 
         for row in results:
             self.myAppsTreeView.insert('', 'end', value=row)
@@ -588,16 +644,170 @@ class masterGUI:
 
 
         self.SQL_GetCourseSpecs = " SELECT Course_Name, Instructor, Designation_Name, C_Est_Num_Students" \
-                                  " FROM COURSE" \
-                                  " WHERE Course_Name = %s"
+                          " FROM COURSE" \
+                          " WHERE Course_Name = %s"
 
 
+    def backToAdminViewFunct(self):
+        self.viewApplication.withdraw()
+        self.AdminViewFunct()
+
+    def backToAdminViewFunct2(self):
+        self.viewPopularproject.withdraw()
+        self.AdminViewFunct()
+        
+
+    def AdminViewFunct(self):
+        self.adminPage = Toplevel()
+
+        self.bigFrame = Frame(self.adminPage)
+        self.bigFrame.grid(row=0, column=0)
+        self.smallFrame = Frame(self.adminPage)
+        self.smallFrame.grid(row=1, column=0)
 
 
+        self.titleAdmin = Label(self.bigFrame, text="Choose Functionality", fg="blue", font=("Helvetica", 16))
+        self.titleAdmin.grid(row=1, column=2, columnspan=2, padx=150,pady=5, sticky=N)
 
-    def backToMePage(self):
-        self.applicationPage.withdraw()
-        self.MePage()
+        self.viewAppBtn = Button(self.smallFrame, width=3, text="View Applications", padx=80,pady=10, command = self.ViewApplication)
+        self.viewAppBtn.grid(row=2, column=2, sticky=E)
+        self.myAppBtn = Button(self.smallFrame, width=3, text="View Popular Project Report", padx=80,pady=10, command = self.ViewPopularProject)
+        self.myAppBtn.grid(row=3, column=2, sticky=E)
+        
+        self.viewAppReportBtn = Button(self.smallFrame, width=3, text="View Application Report", padx=80, pady=10) #command = self.viewAppReportFunction
+        self.viewAppReportBtn.grid(row=4, column=2, sticky=E)
+        self.addProjBtn = Button(self.smallFrame, width=3, text="Add a Project", padx=80, pady=10) #command = self.AddProjectFunction
+        self.addProjBtn.grid(row=5, column=2, sticky=E)
+        self.addCourseBtn = Button(self.smallFrame, width=3, text="Add a Course", padx=80,pady=10) #command = self.AddCourseFunction
+        self.addCourseBtn.grid(row=6, column=2, sticky=E)
+
+    def ViewApplication(self):
+        self.adminPage.withdraw()
+        
+        self.viewApplication = Toplevel()
+        self.bigFrame = Frame(self.viewApplication)
+        self.bigFrame.grid(row=1, column=0)
+        self.smallFrame = Frame(self.viewApplication)
+        self.smallFrame.grid(row=0, column=0)
+
+        self.l1 = Label(self.smallFrame, text="Application", width=30, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
+        self.l1.grid(row=0, column=1)
+
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.SQL_PopulateViewApps = "SELECT Project_Name, Major_Name, Year, Status, Username" \
+                                    " FROM APPLY NATURAL JOIN STUDENT" \
+                                    " ORDER BY Status"
+
+        self.cursor.execute(self.SQL_PopulateViewApps)
+
+        results = self.cursor.fetchall()
+       
+        
+        self.dataColumns = ["Project", "Applicant Major", "Applicant Year", "Status", "Username"]
+        self.AppsView = ttk.Treeview(self.smallFrame, columns=self.dataColumns, show = 'headings')
+        self.AppsView.grid(row=6, column=0, sticky=W, columnspan=4)
+        self.AppsView.heading('#1', text="Project")
+        self.AppsView.heading('#2', text="Applicant Major")
+        self.AppsView.heading('#3', text="Applicant Year")
+        self.AppsView.heading('#4', text="Status")
+        self.AppsView.heading('#5', text="Username")
+        
+        self.backBtn = Button(self.smallFrame, text = "Back", command = self.backToAdminViewFunct)
+        self.backBtn.grid(row = 10, column = 1)
+
+        self.acceptBtn = Button(self.smallFrame, text = "Accept", command = self.changeStatusToAccepted)
+        self.acceptBtn.grid(row=10, column=8)
+
+        self.rejectBtn = Button(self.smallFrame, text = "Reject", command = self.changeStatusToRejected)
+        self.rejectBtn.grid(row=10, column=9)
+        
+        print(results)
+        for row in results:
+            self.AppsView.insert('', 'end', value = row)
+            print(row)
+            
+    def changeStatusToAccepted(self):
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.SQL_UpdateStatus = "UPDATE APPLY" \
+                                " SET Status = 'Accepted'"\
+                                " WHERE Project_Name = %s AND Username = %s"
+        
+        
+
+
+        currentItem = self.AppsView.focus()
+        itemDict = self.AppsView.item(currentItem)
+        appInfo = itemDict.get("values")
+        statusA = appInfo[3]
+        userNameA = appInfo[4]
+        print(statusA)
+        projectName = appInfo[0]
+        if statusA == "Pending":
+            self.cursor.execute(self.SQL_UpdateStatus, (projectName, userNameA))
+        else:
+            messagebox.showinfo("Your status is not matching")
+                
+    def changeStatusToRejected(self):
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.SQL_UpdateStatus = "UPDATE APPLY" \
+                                " SET Status = 'Rejected'"\
+                                " WHERE Project_Name = %s AND Username = %s"
+        
+        
+
+
+        currentItem = self.AppsView.focus()
+        itemDict = self.AppsView.item(currentItem)
+        appInfo = itemDict.get("values")
+        statusA = appInfo[3]
+        userNameA = appInfo[4]
+        print(statusA)
+        projectName = appInfo[0]
+        if statusA == "Pending":
+            self.cursor.execute(self.SQL_UpdateStatus, (projectName, userNameA))
+        else:
+            messagebox.showinfo("Your status is not matching")
+          
+            
+    def ViewPopularProject(self):
+        self.adminPage.withdraw()
+        
+        self.viewPopularproject=Toplevel()
+        self.bigFrame2=Frame(self.viewPopularproject)
+        self.bigFrame2.grid(row=1, column=0)
+        self.smallframe2=Frame(self.viewPopularproject)
+        self.smallframe2.grid(row=0,column=0)
+
+        self.Connect()
+        self.cursor=self.db.cursor()
+
+        self.SQL_PopulateViewPopularProjects= "SELECT DISTINCT(Project_Name), COUNT(Project_Name)"\
+                                              " FROM APPLY"\
+                                              " ORDER BY COUNT(*) DESC"\
+                                              " LIMIT 10"
+        self.cursor.execute(self.SQL_PopulateViewPopularProjects)
+        results=self.cursor.fetchall()
+        print(results)
+
+        self.dataColumns = ["Project","# of Applicants"]
+        self.PopProjView = ttk.Treeview(self.smallframe2, columns=self.dataColumns, show = 'headings')
+        self.PopProjView.grid(row=1, column=0, sticky=W, columnspan=2)
+        self.PopProjView.heading('#1', text="Project")
+        self.PopProjView.heading('#2', text="# of Applicants")
+
+        self.backBtn = Button(self.smallframe2, text="Back", command=self.backToAdminViewFunct2)
+        self.backBtn.grid(row=6, column=1, sticky=W)
+
+        for row in results:
+            self.PopProjView.insert('', 'end', value = row)    
+            
+
 
 
     '''
@@ -605,6 +815,11 @@ class masterGUI:
                                     " FROM PROJECT AS P LEFT OUTER JOIN PROJECT_CATEGORY AS PR ON P.Project_Name = PR.Project_Name" \
                                     " WHERE PR.Requirements IN %s"
     '''
+
+
+    def backToMePage(self):
+        self.applicationPage.withdraw()
+        self.MePage()
 
 
 win = Tk()

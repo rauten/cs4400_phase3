@@ -713,9 +713,7 @@ class masterGUI:
         self.Connect()
         self.cursor2 - self.db.cursor()
 
-        self.SQL_PopulateViewApplication= "SELECT DISTINCT (Project_Name), 
-
-        
+                
  
 
 

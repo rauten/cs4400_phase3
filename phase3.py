@@ -99,7 +99,7 @@ class masterGUI:
         self.Connect()
         self.cursor = self.db.cursor()
         self.SQL_RegisterCheck = "SELECT Username FROM USER WHERE Username = %s"
-        existUser = self.cursor.execute(self.SQL_RegisterCheck, (self.usernameEntry.get()))
+        existUser = self.cursor.execute(self.SQL_RegisterCheck,(self.usernameEntry.get()))
         null2 = "0"
         if self.confirmPassword.get() != self.passwordReg.get() :
             messagebox.showwarning("Error", "Passwords do not match")
@@ -165,10 +165,11 @@ class masterGUI:
         self.cursor = self.db.cursor()
         self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
         info = self.cursor.execute(self.sql, (self.userLogin, self.passLogin))
-        #info2 = self.cursor.fetchall()
+            #info2 = self.cursor.fetchall()
         self.yes=str(1)
         self.adcheck = "SELECT * FROM USER WHERE Username = %s AND Password = %s AND isAdmin= %s"
         admin=self.cursor.execute(self.adcheck, (self.userLogin, self.passLogin,str(1)))
+
         if info == 0:
             messagebox.showwarning("Error! Data entered not registered username/password combination.")
         elif admin==0:
@@ -500,8 +501,6 @@ class masterGUI:
             results = self.cursor.fetchall()
 
 
-        #results = self.cursor.fetchall()
-
         self.newList = []
         self.currList = []
         self.finalProjectList = []
@@ -806,6 +805,13 @@ class masterGUI:
         self.SQL_GetMajoriEditProf = " SELECT Major_Name, Year" \
                                      " FROM STUDENT " \
                                      " WHERE Username = %s"
+
+        self.cursor.execute(self.SQL_GetMajors)
+        majorList = self.cursor.fetchall()
+        majorChoices = []
+        for major in majorList:
+            majorChoices.append(major[0])
+
         self.cursor.execute(self.SQL_GetMajoriEditProf, (self.usernameEntry.get()))
         results = self.cursor.fetchall()
         defaultMajor = results[0][0]
@@ -820,8 +826,7 @@ class masterGUI:
         self.defaultMajorEditProf = defaultMajor
         self.defaultMajorEditProfStringVar = StringVar()
         self.defaultMajorEditProfStringVar.set(self.defaultMajorEditProf)
-        self.majorEditProf = OptionMenu(self.smallFrame, self.defaultMajorEditProfStringVar, "Computer Science",
-                                        "Electrical Engineering", "Chemical Engineering", command=self.updateMajor)
+        self.majorEditProf = OptionMenu(self.smallFrame, self.defaultMajorEditProfStringVar, *majorChoices, command=self.updateMajor)
         self.majorEditProf.config(width=20)
         self.majorEditProf.grid(row=1, column=2)
 
@@ -950,6 +955,10 @@ class masterGUI:
     def backToAdminViewFunct2(self):
         self.viewPopularproject.withdraw()
         self.AdminViewFunct()
+
+    def backToAdminViewFunct3(self):
+        self.AppReport.withdraw()
+        self.AdminViewFunct()
         
 
     def AdminViewFunct(self):
@@ -969,7 +978,7 @@ class masterGUI:
         self.myAppBtn = Button(self.smallFrame, width=3, text="View Popular Project Report", padx=80,pady=10, command = self.ViewPopularProject)
         self.myAppBtn.grid(row=3, column=2, sticky=E)
         
-        self.viewAppReportBtn = Button(self.smallFrame, width=3, text="View Application Report", padx=80, pady=10) #command = self.viewAppReportFunction
+        self.viewAppReportBtn = Button(self.smallFrame, width=3, text="View Application Report", padx=80, pady=10, command = self.ViewApplicationReport)
         self.viewAppReportBtn.grid(row=4, column=2, sticky=E)
         self.addProjBtn = Button(self.smallFrame, width=3, text="Add a Project", padx=80, pady=10) #command = self.AddProjectFunction
         self.addProjBtn.grid(row=5, column=2, sticky=E)
@@ -1018,8 +1027,10 @@ class masterGUI:
         self.rejectBtn = Button(self.smallFrame, text = "Reject", command = self.changeStatusToRejected)
         self.rejectBtn.grid(row=10, column=9)
 
+        
         for row in results:
             self.AppsView.insert('', 'end', value = row)
+
             
     def changeStatusToAccepted(self):
         self.Connect()
@@ -1072,15 +1083,21 @@ class masterGUI:
         self.smallframe2=Frame(self.viewPopularproject)
         self.smallframe2.grid(row=0,column=0)
 
+        self.l1 = Label(self.smallframe2, text="Popular Project", width=20, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
+        self.l1.grid(row=0, column=1)
+
         self.Connect()
         self.cursor=self.db.cursor()
 
         self.SQL_PopulateViewPopularProjects= "SELECT DISTINCT(Project_Name), COUNT(Project_Name)"\
-                                              " FROM APPLY"\
+                                              " FROM APPLY" \
+                                              " GROUP BY Project_Name"\
                                               " ORDER BY COUNT(*) DESC"\
                                               " LIMIT 10"
         self.cursor.execute(self.SQL_PopulateViewPopularProjects)
         results=self.cursor.fetchall()
+
+
 
         self.dataColumns = ["Project","# of Applicants"]
         self.PopProjView = ttk.Treeview(self.smallframe2, columns=self.dataColumns, show = 'headings')
@@ -1092,9 +1109,96 @@ class masterGUI:
         self.backBtn.grid(row=6, column=1, sticky=W)
 
         for row in results:
-            self.PopProjView.insert('', 'end', value = row)    
-            
 
+            self.PopProjView.insert('', 'end', value = row)
+
+
+    def ViewApplicationReport(self):
+        self.adminPage.withdraw()
+        
+        self.AppReport = Toplevel()
+
+        self.bigFrame3 = Frame(self.AppReport)
+        self.bigFrame3.grid(row=1, column=1)
+        self.smallFrame2 = Frame(self.AppReport)
+        self.smallFrame2.grid(row=0, column=1)
+
+        self.titleAR = Label(self.smallFrame2, text="Application Report", fg="blue", font=("Helvetica", 16))
+        self.titleAR.grid(row=0, column=1)
+
+        self.Connect()
+        self.cursor = self.db.cursor()
+        
+        
+        self.SQL_Proj1 = "SELECT Project_Name, COUNT(*)" \
+                        " FROM APPLY" \
+                        " GROUP By Project_Name"
+        self.cursor.execute(self.SQL_Proj1)
+        results2 = self.cursor.fetchall()
+        
+        
+        projList1 = []
+        projList2 = []
+        for x in results2:
+            projName = x[0]
+            self.SQL_Project1 = "SELECT Project_Name, COUNT(*)" \
+                                " FROM APPLY" \
+                                " WHERE Project_Name = %s AND Status = 'Accepted'"
+            self.cursor.execute(self.SQL_Project1, (projName))
+            results1 = self.cursor.fetchall()
+
+            numAccepted = results1[0][1]
+            totalApp = x[1]
+            
+            
+            AcceptedPercentage = (numAccepted/totalApp) * 100
+
+
+            AP2 = round(AcceptedPercentage, 1)
+            AP3 = str(AP2)
+            AP4 = AP3 + '%'
+            newTup = (projName, totalApp, AP4)
+            projList2.append(newTup)
+                
+
+        projList3 = []
+        
+        for x in projList2:
+            projName2 = x[0]
+            self.SQL_Major1 = "SELECT Major_Name" \
+                              " FROM APPLY NATURAL JOIN STUDENT" \
+                              " WHERE Project_Name = %s" \
+                              " GROUP BY Major_Name" \
+                              " ORDER BY COUNT(*) DESC" \
+                              " LIMIT 3 "
+            self.cursor.execute(self.SQL_Major1, (projName2))
+            majors1 = self.cursor.fetchall()
+            string1 = ''
+            string2 = " / "
+            for majorType in majors1:
+                string1 = string1 + str(majorType[0])
+                if majorType != majors1[len(majors1) - 1]:
+                    string1 = string1 + string2
+                
+            newTup2 = (projName2, x[1], x[2], string1)
+            projList3.append(newTup2)
+            
+        
+        
+        self.dataColumns2 = ["Project", "# of Applicants", "Accepance Rate", "Top 3 Majors"]
+        self.AppReportView = ttk.Treeview(self.bigFrame3, columns=self.dataColumns2, show='headings')
+        self.AppReportView.grid(row=1, column=0, sticky=W, columnspan=5)
+        self.AppReportView.heading('#1', text="Project")
+        self.AppReportView.heading('#2', text="# of Applicants")
+        self.AppReportView.heading('#3', text="Acceptance Rate")
+        self.AppReportView.heading('#4', text="Top 3 Majors")
+        self.AppReportView.column('#4', minwidth=0, width=650)
+
+        self.backBtn2 = Button(self.bigFrame3, text="Back", command=self.backToAdminViewFunct3)
+        self.backBtn2.grid(row=6, column=2, sticky=W)
+
+        for row in projList3:
+            self.AppReportView.insert('', "end", value=row)
 
 
     '''
@@ -1107,6 +1211,8 @@ class masterGUI:
     def backToMePage(self):
         self.applicationPage.withdraw()
         self.MePage()
+
+
 
 
 win = Tk()

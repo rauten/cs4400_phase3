@@ -106,8 +106,9 @@ class masterGUI:
         self.Connect()
         self.cursor = self.db.cursor()
         self.SQL_RegisterCheck = "SELECT Username FROM USER WHERE Username = %s"
-        existUser = self.cursor.execute(self.SQL_RegisterCheck,(self.usernameEntry.get()))
-        print(existUser)
+        existUser = self.cursor.execute(self.SQL_RegisterCheck,(self.usernameReg.get()))
+        self.SQL_EmailCheck = "SELECT GT_Email FROM STUDENT WHERE GT_Email = %s"
+        existEmail = self.cursor.execute(self.SQL_EmailCheck, (self.email.get()))
         null2 = "0"
         if self.confirmPassword.get() != self.passwordReg.get() :
             messagebox.showwarning("Error", "Passwords do not match")
@@ -117,6 +118,10 @@ class masterGUI:
             messagebox.showwarning("Error", "Please enter a password")
         elif existUser > 0:
             messagebox.showwarning("Error", "Username already exists!")
+        elif existEmail >0:
+            messagebox.showwarning("Error", "Email already exists!")
+        elif "@gatech.edu" not in self.email.get():
+            messagebox.showwarning("Error", "Email must be a valid GT Email (@gatech.edu)!")
         else:
             self.SQL_RegisterStudent = "INSERT INTO STUDENT (Username, GT_Email, Password) VALUES (%s, %s, %s)"
             self.cursor.execute(self.SQL_RegisterStudent, (self.usernameReg.get(), self.email.get(), self.passwordReg.get()))
@@ -124,7 +129,7 @@ class masterGUI:
             self.cursor.execute(self.SQL_User, (self.usernameReg.get(), self.passwordReg.get(), null2))
             self.db.commit()
             self.db.close()
-            self.mainPageOpen() #Change this to login page
+            self.registerPage.withdraw()
 
 
 ##    def loginCheck(self):
@@ -173,12 +178,12 @@ class masterGUI:
         self.cursor = self.db.cursor()
         self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
         info = self.cursor.execute(self.sql, (self.userLogin, self.passLogin))
-        print(info)
+        
             #info2 = self.cursor.fetchall()
         self.yes=str(1)
         self.adcheck = "SELECT * FROM USER WHERE Username = %s AND Password = %s AND isAdmin= %s"
         admin=self.cursor.execute(self.adcheck, (self.userLogin, self.passLogin,str(1)))
-        print(admin)
+        
         if info == 0:
             messagebox.showwarning("Error! Data entered not registered username/password combination.")
         elif admin==0:
@@ -358,8 +363,7 @@ class masterGUI:
             self.cursor.execute(self.SQL_ApplyFilterCourse, (self.title.get(), self.title.get(), majorList, self.majorFilter, yearList, self.yearFilter, self.designationFilter, self.designationFilter, self.categoryFilter, self.categoryFilter))
 
         results = self.cursor.fetchall()
-        print(results)
-        print(results[0][0])
+     
 
         self.newList = []
         self.currList = []
@@ -527,7 +531,7 @@ class masterGUI:
 
         self.backBtnAppPage = Button(self.smallFrame, text = "Back", command = self.backToMePage)
         self.backBtnAppPage.grid(row = 10, column = 2)
-
+        
         for row in results:
             self.myAppsTreeView.insert('', 'end', value = row)
 
@@ -542,36 +546,43 @@ class masterGUI:
         self.viewApplication.withdraw()
         self.AdminViewFunct()
 
+    def backToAdminViewFunct2(self):
+        self.viewPopularproject.withdraw()
+        self.AdminViewFunct()
+
+    def backToAdminViewFunct3(self):
+        self.AppReport.withdraw()
+        self.AdminViewFunct()
+        
+
     def AdminViewFunct(self):
         self.adminPage = Toplevel()
 
+        
         self.bigFrame = Frame(self.adminPage)
-        self.bigFrame.grid(row=1, column=0)
+        self.bigFrame.grid(row=0, column=0)
         self.smallFrame = Frame(self.adminPage)
-        self.smallFrame.grid(row=0, column=0)
+        self.smallFrame.grid(row=1, column=0)
 
 
-        self.titleAdmin = Label(self.bigFrame, text="Choose Functionality")
-        self.titleAdmin.grid(row=1, column=2, columnspan=2, padx=150, sticky=N)
+        self.titleAdmin = Label(self.bigFrame, text="Choose Functionality", fg="blue", font=("Helvetica", 16))
+        self.titleAdmin.grid(row=1, column=2, columnspan=2, padx=150,pady=5, sticky=N)
 
-
-        self.viewAppBtn = Button(self.smallFrame, width=3, text="View Applications", padx=80,
-                                     pady=10, command = self.ViewApplication)
+        self.viewAppBtn = Button(self.smallFrame, width=3, text="View Applications", padx=80,pady=10, command = self.ViewApplication)
         self.viewAppBtn.grid(row=2, column=2, sticky=E)
-        self.myAppBtn = Button(self.smallFrame, width=3, text="View Popular Project Report", padx=80,
-                               pady=10, command = self.ViewPopularProject)
-
- 
-
+        self.myAppBtn = Button(self.smallFrame, width=3, text="View Popular Project Report", padx=80,pady=10, command = self.ViewPopularProject)
         self.myAppBtn.grid(row=3, column=2, sticky=E)
-        self.viewAppReportBtn = Button(self.smallFrame, width=3, text="View Application Report", padx=80, pady=10) #command = self.viewAppReportFunction
+        
+        self.viewAppReportBtn = Button(self.smallFrame, width=3, text="View Application Report", padx=80, pady=10, command = self.ViewApplicationReport)
         self.viewAppReportBtn.grid(row=4, column=2, sticky=E)
-        self.addProjBtn = Button(self.smallFrame, width=3, text="Add a Project", padx=80, pady=10) #command = self.AddProjectFunction
+        self.addProjBtn = Button(self.smallFrame, width=3, text="Add a Project", padx=80, pady=10,command=self.addProject)
         self.addProjBtn.grid(row=5, column=2, sticky=E)
         self.addCourseBtn = Button(self.smallFrame, width=3, text="Add a Course", padx=80,pady=10) #command = self.AddCourseFunction
         self.addCourseBtn.grid(row=6, column=2, sticky=E)
 
     def ViewApplication(self):
+        self.adminPage.withdraw()
+        
         self.viewApplication = Toplevel()
         self.bigFrame = Frame(self.viewApplication)
         self.bigFrame.grid(row=1, column=0)
@@ -585,51 +596,105 @@ class masterGUI:
         self.Connect()
         self.cursor = self.db.cursor()
 
-        self.SQL_PopulateViewApps = "SELECT Project_Name, Major_Name, Year, Status" \
-                                    "FROM APPLY NATURAL JOIN STUDENT" \
-                                    "ORDER BY Status"
+        self.SQL_PopulateViewApps = "SELECT Project_Name, Major_Name, Year, Status, Username" \
+                                    " FROM APPLY NATURAL JOIN STUDENT" \
+                                    " ORDER BY Status"
 
         self.cursor.execute(self.SQL_PopulateViewApps)
 
         results = self.cursor.fetchall()
+       
         
-        self.dataColumns = ["Project", "Applicant Major", "Applicant Year", "Status"]
+        self.dataColumns = ["Project", "Applicant Major", "Applicant Year", "Status", "Username"]
         self.AppsView = ttk.Treeview(self.smallFrame, columns=self.dataColumns, show = 'headings')
         self.AppsView.grid(row=6, column=0, sticky=W, columnspan=4)
         self.AppsView.heading('#1', text="Project")
         self.AppsView.heading('#2', text="Applicant Major")
         self.AppsView.heading('#3', text="Applicant Year")
         self.AppsView.heading('#4', text="Status")
+        self.AppsView.heading('#5', text="Username")
         
         self.backBtn = Button(self.smallFrame, text = "Back", command = self.backToAdminViewFunct)
         self.backBtn.grid(row = 10, column = 1)
 
-        self.acceptBtn = Button(self.smallFrame, text = "Apply") #command = self.changeStatusToAccepted
+        self.acceptBtn = Button(self.smallFrame, text = "Accept", command = self.changeStatusToAccepted)
         self.acceptBtn.grid(row=10, column=8)
 
-        self.rejectBtn = Button(self.smallFrame, text = "Reject") #command = self.changeStatusToRejected
+        self.rejectBtn = Button(self.smallFrame, text = "Reject", command = self.changeStatusToRejected)
         self.rejectBtn.grid(row=10, column=9)
+        
+        for row in results:
+            self.AppsView.insert('', 'end', value = row)
+            
+            
+    def changeStatusToAccepted(self):
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.SQL_UpdateStatus = "UPDATE APPLY" \
+                                " SET Status = 'Accepted'"\
+                                " WHERE Project_Name = %s AND Username = %s"
         
         
 
+
+        currentItem = self.AppsView.focus()
+        itemDict = self.AppsView.item(currentItem)
+        appInfo = itemDict.get("values")
+        statusA = appInfo[3]
+        userNameA = appInfo[4]
+        projectName = appInfo[0]
+        if statusA == "Pending":
+            self.cursor.execute(self.SQL_UpdateStatus, (projectName, userNameA))
+        else:
+            messagebox.showinfo("Your status is not matching")
+                
+    def changeStatusToRejected(self):
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.SQL_UpdateStatus = "UPDATE APPLY" \
+                                " SET Status = 'Rejected'"\
+                                " WHERE Project_Name = %s AND Username = %s"
+        
+        
+
+
+        currentItem = self.AppsView.focus()
+        itemDict = self.AppsView.item(currentItem)
+        appInfo = itemDict.get("values")
+        statusA = appInfo[3]
+        userNameA = appInfo[4]
+        projectName = appInfo[0]
+        if statusA == "Pending":
+            self.cursor.execute(self.SQL_UpdateStatus, (projectName, userNameA))
+        else:
+            messagebox.showinfo("Your status is not matching")
+          
+            
     def ViewPopularProject(self):
         self.adminPage.withdraw()
+        
         self.viewPopularproject=Toplevel()
         self.bigFrame2=Frame(self.viewPopularproject)
         self.bigFrame2.grid(row=1, column=0)
         self.smallframe2=Frame(self.viewPopularproject)
         self.smallframe2.grid(row=0,column=0)
 
+        self.projTitle = Label(self.smallframe2, text="Popular Project", width=20, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
+        self.projTitle.grid(row=0, column=1, sticky=W)
+
         self.Connect()
         self.cursor=self.db.cursor()
 
         self.SQL_PopulateViewPopularProjects= "SELECT DISTINCT(Project_Name), COUNT(Project_Name)"\
                                               " FROM APPLY"\
+                                              " GROUP BY Project_Name"\
                                               " ORDER BY COUNT(*) DESC"\
                                               " LIMIT 10"
         self.cursor.execute(self.SQL_PopulateViewPopularProjects)
         results=self.cursor.fetchall()
-        print(results)
+        
 
         self.dataColumns = ["Project","# of Applicants"]
         self.PopProjView = ttk.Treeview(self.smallframe2, columns=self.dataColumns, show = 'headings')
@@ -637,13 +702,300 @@ class masterGUI:
         self.PopProjView.heading('#1', text="Project")
         self.PopProjView.heading('#2', text="# of Applicants")
 
-        self.backBtn = Button(self.smallframe2, text="Back", command=self.backToAdminViewFunct)
+        self.backBtn = Button(self.smallframe2, text="Back", command=self.backToAdminViewFunct2)
         self.backBtn.grid(row=6, column=1, sticky=W)
 
         for row in results:
             self.PopProjView.insert('', 'end', value = row)
 
+
+    def ViewApplicationReport(self):
+        self.AppReport = Toplevel()
+
+        self.bigFrame3 = Frame(self.AppReport)
+        self.bigFrame3.grid(row=0, column=1)
+        self.smallFrame2 = Frame(self.AppReport)
+        self.smallFrame2.grid(row=1, column=1)
+
+        self.titleAR = Label(self.smallFrame2, text="Application Report", fg="blue", font=("Helvetica", 16))
+        self.titleAR.grid(row=0, column=1)
+
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.SQL_Project1 = "SELECT Status, COUNT(*) AS Count" \
+                            " FROM APPLY" \
+                            " GROUP BY Status"
+        self.cursor.execute(self.SQL_Project1)
+        results=self.cursor.fetchall()
+
+        self.SQL_Project2 = "SELECT Project_Name, COUNT(*) AS Count" \
+                            " FROM APPLY" \
+                            " GROUP By Project_Name"
+        self.cursor.execute(self.SQL_Project2)
+        results2 = self.cursor.fetchall()
+        print(results2)
+
         
+        self.dataColumns2 = ["Project", "# of Applicants", "Accepance Rate", "Top 3 Major"]
+        self.AppReportView = ttk.Treeview(self.bigFrame3, columns=self.dataColumns2, show='headings')
+        self.AppReportView.grid(row=1, column=0, sticky=W, columnspan=2)
+        self.AppReportView.heading('#1', text="Project")
+        self.AppReportView.heading('#2', text="# of Applicants")
+        self.AppReportView.heading('#3', text="Acceptance Rate")
+        self.AppReportView.heading('#4', text="top 3 Majors")
+
+        self.backBtn2 = Button(self.smallFrame2, text="Back", command=self.backToAdminViewFunct3)
+        self.backBtn2.grid(row=6, column=1, sticky=W)
+
+
+
+
+    def addProject(self):
+        self.AddProject=Toplevel()
+        self.smallFrame = Frame(self.AddProject)
+        self.smallFrame.grid(row=0, column=0)
+        self.titleReg = Label(self.smallFrame,text="Add a Project", padx= 45, pady=10, font=16)
+        self.titleReg.grid(row=0, column= 1, sticky = W)
+
+        self.projectNameEntry = Entry(self.smallFrame, width=50)
+        self.projectNameEntry.grid(row=1, column=1, sticky=W, pady=5)
+        self.projectNameLabel = Label(self.smallFrame, text="Project Name:")
+        self.projectNameLabel.grid(row=1, column=0, sticky=E, padx=5, pady=5)
+
+        self.advisorLabel = Label(self.smallFrame, text="Advisor:")
+        self.advisorLabel.grid(row=2, column=0, sticky=E, padx=5, pady=5)
+        self.advisorEntry = Entry(self.smallFrame, width=50)
+        self.advisorEntry.grid(row=2, column=1, sticky=W, pady=5)
+
+        self.advisorEmailLabel = Label(self.smallFrame, text="Advisor Email:")
+        self.advisorEmailLabel.grid(row=3, column=0, sticky=E, padx=5, pady=5)
+        self.advisorEmailEntry = Entry(self.smallFrame, width=50)
+        self.advisorEmailEntry.grid(row=3, column=1, sticky=W, pady=5)
+
+        self.descriptionLabel = Label(self.smallFrame, text = "Description:")
+        self.descriptionLabel.grid(row = 4, column = 0, sticky = E + N, padx = 5, pady = 5)
+        self.descriptionEntry = Text(self.smallFrame, wrap = WORD, height = 5, width = 36, padx = 5, pady = 5)
+        self.scrollbar = Scrollbar(self.smallFrame)
+        self.scrollbar.grid(row = 4, column = 1, sticky = N + S + E)
+        self.descriptionEntry.grid(row = 4, column = 1, sticky = W)
+        self.descriptionEntry.config(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.config(command=self.descriptionEntry.yview)
+
+        Label(self.smallFrame, text = "Category: ").grid(row = 5, column = 0, sticky=E + N, padx = 5, pady = 5)
+        self.categoriesFrame = Listbox(self.smallFrame, width = 47, height = 7)
+        self.categoriesFrame.grid(row = 5, column = 1, sticky = W + N, pady = 5)
+        
+        self.scrollbarcf = Scrollbar(self.smallFrame,orient=VERTICAL)
+        self.scrollbarcf.grid(row = 5, column = 1, sticky = E + N + S, pady = 5)
+        self.scrollbarcf.config(command=self.categoriesFrame.yview)
+        self.categoriesFrame.config(yscrollcommand=self.scrollbarcf.set)
+        self.scrollbarcfh = Scrollbar(self.smallFrame,orient=HORIZONTAL)
+        self.scrollbarcfh.grid(row = 6, column = 1, sticky = E + W + N)
+        self.scrollbarcfh.config(command=self.categoriesFrame.xview)
+        self.categoriesFrame.config(xscrollcommand=self.scrollbarcfh.set)
+        
+        self.addNewCategory = Button(self.smallFrame, text = "Add a New Category", font = "Helvetica 10", command = self.createWindow)
+        self.addNewCategory.grid(row = 7, column = 1, sticky= E + N, padx = 25, pady = 2)
+
+        Label(self.smallFrame, text = "Designation:").grid(row = 8, column = 0, sticky=E, padx = 5, pady = 5)
+        self.designationChoices = StringVar(self.smallFrame)
+        self.Connect()
+        self.cursor=self.db.cursor()
+        self.SQL_designationChoices= "SELECT DISTINCT(Designation_Name)"\
+                                     " FROM PROJECT"\
+                                 
+        self.cursor.execute(self.SQL_designationChoices)
+        self.resultsdesig=self.cursor.fetchall()
+        self.designation = []
+        for i in self.resultsdesig:
+            self.designation.append(i[0])
+        self.designationChoices.set('None')
+        self.popupMenu3 = OptionMenu(self.smallFrame, self.designationChoices, *self.designation)
+        self.popupMenu3.grid(row = 8, column =1, sticky = W)
+
+        self.numStudentsLabel = Label(self.smallFrame, text="Estimated # of Students:")
+        self.numStudentsLabel.grid(row= 9, column=0, sticky=E, padx=5, pady=5)
+        self.numStudentsEntry = Entry(self.smallFrame, width=50)
+        self.numStudentsEntry.grid(row= 9, column=1, sticky=W, pady=5)
+
+        Label(self.smallFrame, text = "Major Requirement:").grid(row = 10, column = 0, sticky=E, padx = 5, pady = 5)
+        self.majorReqChoices = StringVar(self.smallFrame)
+        self.Connect()
+        self.cursor=self.db.cursor()
+        self.SQL_majorReqChoices= "SELECT Major_Name"\
+                                  " FROM MAJOR"\
+                                  
+        self.cursor.execute(self.SQL_majorReqChoices)
+        self.resultsmajor=self.cursor.fetchall()
+        self.majorReq = []
+        for i in self.resultsmajor:
+            self.majorReq.append(i[0])
+        self.majorReqChoices.set('None')
+        self.popupMenu4 = OptionMenu(self.smallFrame, self.majorReqChoices, *self.majorReq)
+        self.popupMenu4.grid(row = 10, column =1, sticky = W)
+        
+
+        Label(self.smallFrame, text = "Year Requirement:").grid(row = 11, column = 0, sticky=E, padx = 5, pady = 5)
+        self.yearReqChoices = StringVar(self.smallFrame)
+        self.Connect()
+        self.cursor=self.db.cursor()
+        self.SQL_yearReqChoices= "SELECT DISTINCT(Year)"\
+                                 " FROM STUDENT"\
+                                 
+        self.cursor.execute(self.SQL_yearReqChoices)
+        self.resultsyear=self.cursor.fetchall()
+        self.yearReq = []
+        for i in self.resultsyear:
+            self.yearReq.append(i[0])
+        self.yearReqChoices.set('None')
+        self.popupMenu5 = OptionMenu(self.smallFrame, self.yearReqChoices, *self.yearReq)
+        self.popupMenu5.grid(row = 11, column =1, sticky = W)
+
+        Label(self.smallFrame, text = "Department Requirement:").grid(row = 12, column = 0, sticky=E, padx = 5, pady = 5)
+        self.departmentReqChoices = StringVar(self.smallFrame)
+        self.Connect()
+        self.cursor=self.db.cursor()
+        self.SQL_deptReqChoices= "SELECT DISTINCT(Department_Name)"\
+                                 " FROM MAJOR"\
+                                 
+        self.cursor.execute(self.SQL_deptReqChoices)
+        self.resultsdept=self.cursor.fetchall()
+        self.departmentReq = []
+        for i in self.resultsdept:
+            self.departmentReq.append(i[0])
+        self.departmentReqChoices.set('None')
+        self.popupMenu6 = OptionMenu(self.smallFrame, self.departmentReqChoices, *self.departmentReq)
+        self.popupMenu6.grid(row = 12, column =1, sticky = W)
+
+        self.backButton = Button(self.smallFrame, text="Back", width=10, bg="white")
+        self.backButton.grid(row=13, column=0, sticky = E, pady = 10)
+
+        self.submitButton = Button(self.smallFrame, text="Submit", width=10, bg="white",command=self.submitProject)
+        self.submitButton.grid(row=13, column=1, sticky = E, pady = 10, padx = 100)
+
+        
+
+    def createWindow(self):
+        self.chooseCategoryNameWin = Toplevel()
+        self.smallFrame1 = Frame(self.chooseCategoryNameWin)
+        self.smallFrame1.grid(row = 1, column = 0)
+        self.categoryNameLabel = Label(self.smallFrame1, text="Select a Category Name:")
+        self.categoryNameLabel.grid(row=2, column=0, sticky=E, padx=5, pady=5)
+        self.categoryChoices = StringVar(self.smallFrame1)
+        self.SQL_categoryChoices= "SELECT *"\
+                                 " FROM CATEGORY"\
+                                 
+        self.cursor.execute(self.SQL_categoryChoices)
+        self.resultscats=self.cursor.fetchall()
+        self.categoryList = []
+        self.addedcats=[]
+        self.donecats=self.categoriesFrame.get(0,END)
+        
+        
+        
+        for i in self.donecats:
+            self.addedcats.append(i)
+            
+        
+        for i in self.resultscats:
+            if i[0] not in self.addedcats:
+                self.categoryList.append(i[0])
+        
+        self.categoryChoices.set('Select Option')
+        self.popupMenu7 = OptionMenu(self.smallFrame1, self.categoryChoices, *self.categoryList)
+        self.popupMenu7.grid(row = 2, column =1, sticky = W)
+        self.submitCatButton = Button(self.smallFrame1, text="Ok", width=10, bg="white", command = self.clickEnterButton)
+        self.submitCatButton.grid(row=3, column=1, sticky = E, pady = 5, padx = 100)
+
+    def clickEnterButton(self) :
+        self.choiceSelected = self.categoryChoices.get()
+        if self.choiceSelected != 'Select Option':
+            self.categoriesFrame.insert(END, self.choiceSelected)
+
+        self.chooseCategoryNameWin.withdraw()
+
+    def submitProject(self):
+        self.projNameNew = self.projectNameEntry.get()
+        self.advisorNameNew = self.advisorEntry.get()
+        self.advisorEmailNew = self.advisorEmailEntry.get()
+        self.descriptionNew = self.descriptionEntry.get(1.0,END)
+        self.categoryNew = self.categoriesFrame.get(0,END)
+        self.catNewList = []
+        for i in self.categoryNew:
+            self.catNewList.append(i)
+        
+        self.designationNew = self.designationChoices.get()
+        self.numStudentsNew = self.numStudentsEntry.get()
+        self.numStudentsNew = (self.numStudentsNew)
+        self.majorReqNew = str(self.majorReqChoices.get())
+        self.yearReqNew = str(self.yearReqChoices.get())
+        self.deptReqNew = str(self.departmentReqChoices.get())
+        
+        
+      
+
+        self.SQL_submitProject =" INSERT INTO PROJECT" \
+                                " VALUES (%s,%s,%s,%s,%s,%s)" \
+
+                                
+        self.SQL_submitMajorReq =" INSERT INTO PROJECT_REQUIREMENTS" \
+                                 " VALUES (%s,%s)" \
+                                 
+
+        self.SQL_submitYearReq =" INSERT INTO PROJECT_REQUIREMENTS" \
+                                " VALUES (%s,%s)" \
+                                 
+
+        self.SQL_submitDeptReq =" INSERT INTO PROJECT_REQUIREMENTS" \
+                                " VALUES (%s,%s)" \
+
+        self.SQL_submitProjCat =" INSERT INTO PROJECT_CATEGORY" \
+                                " VALUES (%s,%s)" \
+                                
+
+        
+        if not self.projNameNew.strip() or not self.advisorNameNew.strip() or not self.advisorEmailNew.strip() or not self.descriptionNew.strip() or len(self.catNewList)==0 or self.designationNew=="None" or not self.numStudentsNew.strip():
+            messagebox.showwarning("You need to fill all fields (other than Requirements)")
+
+        else:
+            self.numStudentsNew = int((self.numStudentsNew))
+            
+            self.cursor.execute(self.SQL_submitProject, (self.numStudentsNew, self.projNameNew, self.advisorNameNew, self.advisorEmailNew, self.descriptionNew, self.designationNew))
+
+            if self.majorReqNew != "None":
+                self.cursor.execute(self.SQL_submitMajorReq, (self.projNameNew, self.majorReqNew))
+
+            if self.yearReqNew != "None":
+                self.cursor.execute(self.SQL_submitYearReq, (self.projNameNew, self.yearReqNew))
+
+            if self.deptReqNew != "None":
+                self.cursor.execute(self.SQL_submitDeptReq, (self.projNameNew, self.deptReqNew))
+
+            
+            for i in self.catNewList:
+                self.cursor.execute(self.SQL_submitProjCat, (self.projNameNew, i))
+
+            self.AddProject.withdraw()
+
+    
+
+        
+
+        
+
+        
+
+
+
+        
+
+        
+        
+        
+        
+        
+
 
 
 

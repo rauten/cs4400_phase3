@@ -704,45 +704,91 @@ class masterGUI:
 
 
     def ViewApplicationReport(self):
+        self.adminPage.withdraw()
+        
         self.AppReport = Toplevel()
 
         self.bigFrame3 = Frame(self.AppReport)
-        self.bigFrame3.grid(row=0, column=1)
+        self.bigFrame3.grid(row=1, column=1)
         self.smallFrame2 = Frame(self.AppReport)
-        self.smallFrame2.grid(row=1, column=1)
+        self.smallFrame2.grid(row=0, column=1)
 
         self.titleAR = Label(self.smallFrame2, text="Application Report", fg="blue", font=("Helvetica", 16))
         self.titleAR.grid(row=0, column=1)
 
         self.Connect()
         self.cursor = self.db.cursor()
-
-        self.SQL_Project1 = "SELECT Status, COUNT(*) AS Count" \
-                            " FROM APPLY" \
-                            " GROUP BY Status"
-        self.cursor.execute(self.SQL_Project1)
-        results=self.cursor.fetchall()
-
-        self.SQL_Project2 = "SELECT Project_Name, COUNT(*) AS Count" \
-                            " FROM APPLY" \
-                            " GROUP By Project_Name"
-        self.cursor.execute(self.SQL_Project2)
-        results2 = self.cursor.fetchall()
-        print(results2)
-
         
-        self.dataColumns2 = ["Project", "# of Applicants", "Accepance Rate", "Top 3 Major"]
+        
+        self.SQL_Proj1 = "SELECT Project_Name, COUNT(*)" \
+                        " FROM APPLY" \
+                        " GROUP By Project_Name"
+        self.cursor.execute(self.SQL_Proj1)
+        results2 = self.cursor.fetchall()
+        
+        
+        projList1 = []
+        projList2 = []
+        for x in results2:
+            projName = x[0]
+            self.SQL_Project1 = "SELECT Project_Name, COUNT(*)" \
+                                " FROM APPLY" \
+                                " WHERE Project_Name = %s AND Status = 'Accepted'"
+            self.cursor.execute(self.SQL_Project1, (projName))
+            results1 = self.cursor.fetchall()
+
+            numAccepted = results1[0][1]
+            totalApp = x[1]
+            
+            
+            AcceptedPercentage = (numAccepted/totalApp) * 100
+
+            AP2 = round(AcceptedPercentage, 1)
+            AP3 = str(AP2)
+            AP4 = AP3 + '%'
+            newTup = (projName, totalApp, AP4)
+            projList2.append(newTup)
+                
+
+        projList3 = []
+        
+        for x in projList2:
+            projName2 = x[0]
+            self.SQL_Major1 = "SELECT Major_Name" \
+                              " FROM APPLY NATURAL JOIN STUDENT" \
+                              " WHERE Project_Name = %s" \
+                              " GROUP BY Major_Name" \
+                              " ORDER BY COUNT(*) DESC" \
+                              " LIMIT 3 "
+            self.cursor.execute(self.SQL_Major1, (projName2))
+            majors1 = self.cursor.fetchall()
+            string1 = ''
+            string2 = " / "
+            for majorType in majors1:
+                string1 = string1 + str(majorType[0])
+                if majorType != majors1[len(majors1) - 1]:
+                    string1 = string1 + string2
+                
+            newTup2 = (projName2, x[1], x[2], string1)
+            projList3.append(newTup2)
+            
+        
+        
+        self.dataColumns2 = ["Project", "# of Applicants", "Accepance Rate", "Top 3 Majors"]
         self.AppReportView = ttk.Treeview(self.bigFrame3, columns=self.dataColumns2, show='headings')
-        self.AppReportView.grid(row=1, column=0, sticky=W, columnspan=2)
+        self.AppReportView.grid(row=1, column=0, sticky=W, columnspan=5)
         self.AppReportView.heading('#1', text="Project")
         self.AppReportView.heading('#2', text="# of Applicants")
         self.AppReportView.heading('#3', text="Acceptance Rate")
-        self.AppReportView.heading('#4', text="top 3 Majors")
+        self.AppReportView.heading('#4', text="Top 3 Majors")
+        self.AppReportView.column('#4', minwidth=0, width=650)
 
-        self.backBtn2 = Button(self.smallFrame2, text="Back", command=self.backToAdminViewFunct3)
-        self.backBtn2.grid(row=6, column=1, sticky=W)
+        self.backBtn2 = Button(self.bigFrame3, text="Back", command=self.backToAdminViewFunct3)
+        self.backBtn2.grid(row=6, column=2, sticky=W)
 
-
+        for row in projList3:
+            self.AppReportView.insert('', "end", value=row)
+            
 
 
 win = Tk()

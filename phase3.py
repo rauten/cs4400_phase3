@@ -1044,20 +1044,19 @@ class masterGUI:
         self.smallframe2 = Frame(self.viewPopularproject)
         self.smallframe2.grid(row=0, column=0)
 
-        self.l1 = Label(self.smallframe2, text="Popular Project", width=20, padx=5, pady=5, fg="blue",
-                        font=("Helvetica", 16))
-        self.l1.grid(row=0, column=1)
+        self.title1 = Label(self.smallframe2, text="Popular Project", width=20, padx=5, pady=5, fg="blue", font=("Helvetica", 16))
+        self.title1.grid(row=0, column=1)
 
         self.Connect()
         self.cursor = self.db.cursor()
 
-        self.SQL_PopulateViewPopularProjects = "SELECT DISTINCT(Project_Name), COUNT(Project_Name)" \
-                                               " FROM APPLY" \
-                                               " GROUP BY Project_Name" \
-                                               " ORDER BY COUNT(*) DESC" \
-                                               " LIMIT 10"
+        self.SQL_PopulateViewPopularProjects= "SELECT DISTINCT(Project_Name), COUNT(Project_Name)"\
+                                              " FROM APPLY"\
+                                              " GROUP BY Project_Name" \
+                                              " ORDER BY COUNT(*) DESC"\
+                                              " LIMIT 10" 
         self.cursor.execute(self.SQL_PopulateViewPopularProjects)
-        results = self.cursor.fetchall()
+        results=self.cursor.fetchall()
 
         self.dataColumns = ["Project", "# of Applicants"]
         self.PopProjView = ttk.Treeview(self.smallframe2, columns=self.dataColumns, show='headings')

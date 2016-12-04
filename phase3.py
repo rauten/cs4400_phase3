@@ -204,8 +204,8 @@ class masterGUI:
 
         self.SQL_GetMajors = " SELECT DISTINCT(Major_Name)" \
                              " FROM MAJOR" \
- \
-                self.cursor.execute(self.SQL_GetMajors)
+
+        self.cursor.execute(self.SQL_GetMajors)
         self.majors = self.cursor.fetchall()
         self.majorsList = []
         for item in self.majors:
@@ -424,9 +424,9 @@ class masterGUI:
         yearList = []
 
         self.SQL_GetAllRequirements = " SELECT DISTINCT(Requirements)" \
-                                      " FROM PROJECT_REQUIREMENTS" \
- \
-                self.cursor.execute(self.SQL_GetAllRequirements)
+                                      " FROM PROJECT_REQUIREMENTS"
+
+        self.cursor.execute(self.SQL_GetAllRequirements)
         requirements = self.cursor.fetchall()
         requirementsList = []
         for item in requirements:

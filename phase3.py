@@ -100,7 +100,6 @@ class masterGUI:
         self.cursor = self.db.cursor()
         self.SQL_RegisterCheck = "SELECT Username FROM USER WHERE Username = %s"
         existUser = self.cursor.execute(self.SQL_RegisterCheck, (self.usernameEntry.get()))
-        print(existUser)
         null2 = "0"
         if self.confirmPassword.get() != self.passwordReg.get() :
             messagebox.showwarning("Error", "Passwords do not match")
@@ -166,12 +165,10 @@ class masterGUI:
         self.cursor = self.db.cursor()
         self.sql = "SELECT * FROM USER WHERE Username = %s AND Password = %s"
         info = self.cursor.execute(self.sql, (self.userLogin, self.passLogin))
-        print(info)
         #info2 = self.cursor.fetchall()
         self.yes=str(1)
         self.adcheck = "SELECT * FROM USER WHERE Username = %s AND Password = %s AND isAdmin= %s"
         admin=self.cursor.execute(self.adcheck, (self.userLogin, self.passLogin,str(1)))
-        print(admin)
         if info == 0:
             messagebox.showwarning("Error! Data entered not registered username/password combination.")
         elif admin==0:
@@ -201,6 +198,40 @@ class masterGUI:
 
 
     def MainPage(self):
+
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+
+        self.SQL_GetMajors = " SELECT DISTINCT(Major_Name)" \
+                             " FROM MAJOR" \
+
+        self.cursor.execute(self.SQL_GetMajors)
+        self.majors = self.cursor.fetchall()
+        self.majorsList = []
+        for item in self.majors:
+            self.majorsList.append(item[0])
+
+        self.SQL_GetDesignations = " SELECT Designation_Name" \
+                                   " FROM DESIGNATION"
+
+        self.cursor.execute(self.SQL_GetDesignations)
+        self.designations = self.cursor.fetchall()
+        self.designationsList = []
+        for item in self.designations:
+            self.designationsList.append(item[0])
+
+
+        self.SQL_GetCategories = " SELECT Category_Name" \
+                                   " FROM CATEGORY"
+
+        self.cursor.execute(self.SQL_GetCategories)
+        self.categories = self.cursor.fetchall()
+        self.categoriesList = []
+        for item in self.categories:
+            self.categoriesList.append(item[0])
+
+
         self.mainPage = Toplevel()
 
         self.bigFrame = Frame(self.mainPage)
@@ -223,21 +254,19 @@ class masterGUI:
 
         # CATEGORY SELECTION
         self.categoryFilter = ""
-        self.choiceVarOne = StringVar()
-        self.choiceVarOne.set("Please Select")
-        self.category = OptionMenu(self.smallFrame, self.choiceVarOne, "Computing for good",
-                                   "Doing good for your neighborhood", "Reciprocal teaching and learning",
-                                   "Urban development", "Adaptive learning", command=self.updateCategory)
-        self.category.config(width=25)  # Allow the user to see everything
-        self.category.grid(row=1, column=3, sticky=W, padx=5)
-        categoryLB = Label(self.smallFrame, text="Category")
-        categoryLB.grid(row=1, column=2, sticky=W, padx=5)
+        self.categoriesLBLb = Label(self.smallFrame, text = "Category: ").grid(row = 1, column = 3)
+        self.categoriesListBox = Listbox(self.smallFrame, width = 47, height = 7)
+        self.categoriesListBox.grid(row = 1, column = 4)
+        #self.category.config(width=25)  # Allow the user to see everything
+        #self.category.grid(row=1, column=3, sticky=W, padx=5)
+        #categoryLB = Label(self.smallFrame, text="Category")
+        #categoryLB.grid(row=1, column=2, sticky=W, padx=5)
 
         # DESIGNATION SELECTION
         self.designationFilter = ""
         self.choiceVar = StringVar()
         self.choiceVar.set("Please Select")
-        self.designation = OptionMenu(self.smallFrame, self.choiceVar, "Sustainable Communities", "Community",
+        self.designation = OptionMenu(self.smallFrame, self.choiceVar, *self.designationsList,
                                       command=self.updateDesignation)
         self.designation.grid(row=2, column=1, sticky=W)
         designationLB = Label(self.smallFrame, text="Designation")
@@ -247,9 +276,7 @@ class masterGUI:
         self.majorFilter = ""
         self.choiceVarTwo = StringVar()
         self.choiceVarTwo.set("Please Select")
-        self.major = OptionMenu(self.smallFrame, self.choiceVarTwo, "Computer Science", "Mechanical Engineering",
-                                "Chemical Engineering",
-                                command=self.updateMajor)  # Can add more major options here if necessary
+        self.major = OptionMenu(self.smallFrame, self.choiceVarTwo, *self.majorsList, command=self.updateMajor)  # Can add more major options here if necessary
         self.major.grid(row=3, column=1, sticky=W)
         majorLB = Label(self.smallFrame, text="Major")
         majorLB.grid(row=3, column=0, sticky=W, padx=5)
@@ -268,11 +295,11 @@ class masterGUI:
         self.projCourseSelection = IntVar()
 
         self.proj = Radiobutton(self.smallFrame, text="Project", variable=self.projCourseSelection, value=0)
-        self.proj.grid(row=3, column=4)
+        self.proj.grid(row=3, column=5)
         self.course = Radiobutton(self.smallFrame, text="Course", variable=self.projCourseSelection, value=1)
-        self.course.grid(row=3, column=5)
+        self.course.grid(row=3, column=6)
         self.both = Radiobutton(self.smallFrame, text="Both", variable=self.projCourseSelection, value=2)
-        self.both.grid(row=3, column=6)
+        self.both.grid(row=3, column=7)
 
         # Treeview table
         self.mainPageColumns = ['Name', 'Type']
@@ -280,12 +307,56 @@ class masterGUI:
         self.table.grid(row=6, column=0, sticky=W, columnspan=5)
         self.table.heading('#1', text="Name")
         self.table.heading('#2', text="Type")
+        self.table.column('#1,', minwidth=0, width=400)
 
         # BUTTONS
         self.applyFilterBtn = Button(self.smallFrame, width=10, text="Apply Filter", command=self.applyFilter)
-        self.applyFilterBtn.grid(row=5, column=3, sticky=W)
+        self.applyFilterBtn.grid(row=5, column=4, sticky=W)
         self.resetFilterBtn = Button(self.smallFrame, width=10, text="Reset Filter", command=self.clearFilter)
-        self.resetFilterBtn.grid(row=5, column=3, sticky=E)
+        self.resetFilterBtn.grid(row=5, column=4, sticky=E)
+        self.addCategoryBtn = Button(self.smallFrame, width=10, text="Add Category", command=self.AddCategoryWindow)
+        self.addCategoryBtn.grid(row=1, column = 5)
+
+
+    def AddCategoryWindow(self):
+        self.Connect()
+        self.cursor = self.db.cursor()
+
+        self.addCategoryWindow = Toplevel()
+
+        self.smallFrame = Frame(self.addCategoryWindow)
+        self.smallFrame.grid(row=1, column=0)
+
+        self.catNameLb = Label(self.smallFrame, text = "Select a Category Name:")
+        self.catNameLb.grid(row = 2, column = 0, sticky = E, padx = 5, pady = 5)
+        self.catChoices = StringVar(self.smallFrame)
+
+        self.cursor.execute(self.SQL_GetCategories)
+        categories = self.cursor.fetchall()
+        categoriesList = []
+        addedcategories =[]
+        donecats = self.categoriesListBox.get(0, END)
+
+        for i in donecats:
+            addedcategories.append(i)
+
+        for i in categories:
+            if i[0] not in addedcategories:
+                categoriesList.append(i[0])
+
+        self.catChoices.set("Select Option")
+        popupMenu7 = OptionMenu(self.smallFrame, self.catChoices, *categoriesList)
+        popupMenu7.grid(row = 2, column = 1, sticky = W)
+        self.submitCategoryBtn = Button(self.smallFrame, text = "Ok", width = 10, command = self.addCategoryToListView)
+        self.submitCategoryBtn.grid(row = 3, column = 1, sticky = E, pady = 5, padx = 100)
+
+    def addCategoryToListView(self):
+        self.categorySelected = self.catChoices.get()
+        if self.categorySelected != "Select Option":
+            self.categoriesListBox.insert(END, self.categorySelected)
+        self.addCategoryWindow.withdraw()
+
+
 
     def updateYear(self, value):
         self.yearFilter = value
@@ -304,18 +375,83 @@ class masterGUI:
         self.cursor = self.db.cursor()
 
         if self.table.get_children() != ():
-            self.table.delete(self.table.get_children())
+            for row in self.table.get_children():
+                self.table.delete(row)
+
+        self.categoriesInListBox = []
+        self.categoriesInListBox = self.categoriesListBox.get(0, END)
+
+        self.SQL_CheckCategoryProject = " SELECT DISTINCT(Project_Name)" \
+                                        " FROM PROJECT_CATEGORY" \
+                                        " WHERE Category_Name = %s"
+
+        self.SQL_CheckCategoryCourse = " SELECT DISTINCT(Course_Name)" \
+                                       " FROM COURSE_CATEGORY" \
+                                       " WHERE Category_Name = %s"
+
+        self.SQL_GetProjects = " SELECT DISTINCT(Project_Name)" \
+                               " FROM PROJECT"
+
+        self.SQL_GetCourses = " SELECT DISTINCT(Course_Name)" \
+                              " FROM COURSE"
+
+        currentList = []
+        self.cursor.execute(self.SQL_GetProjects)
+        self.currTupleList = self.cursor.fetchall()
+        for i in self.currTupleList:
+            currentList.append(i[0])
+        newListProjects = []
+        for i in self.categoriesInListBox:
+            self.cursor.execute(self.SQL_CheckCategoryProject, (i))
+            self.currTupleList = self.cursor.fetchall()
+            for row in self.currTupleList:
+                newListProjects.append(row[0])
+            currentList = set(currentList).intersection(newListProjects)
+            currentList = list(currentList)
+            newListProjects.clear()
+
+        currentListCourse = []
+        self.cursor.execute(self.SQL_GetCourses)
+        self.currTupleList = self.cursor.fetchall()
+        for i in self.currTupleList:
+            currentListCourse.append(i[0])
+        newListCourses = []
+        for i in self.categoriesInListBox:
+            self.cursor.execute(self.SQL_CheckCategoryCourse, (i))
+            self.currTupleList = self.cursor.fetchall()
+            for row in self.currTupleList:
+                newListCourses.append(row[0])
+            currentListCourse = set(currentListCourse).intersection(newListCourses)
+            currentListCourse = list(currentListCourse)
+            newListCourses.clear()
+
+
 
         majorList = []
         yearList = []
 
-        requirementsList = ['Freshman only', 'Sophomore only', 'Junior only', 'Senior only', 'CS student only',
-                            'ECE student only', 'ChE student only']
+        self.SQL_GetAllRequirements = " SELECT DISTINCT(Requirements)" \
+                                      " FROM PROJECT_REQUIREMENTS" \
+
+        self.cursor.execute(self.SQL_GetAllRequirements)
+        requirements = self.cursor.fetchall()
+        requirementsList = []
+        for item in requirements:
+            requirementsList.append(item[0])
+
+        self.SQL_GetCorrespondingDepartment = " SELECT Department_Name" \
+                                              " FROM MAJOR" \
+                                              " WHERE Major_Name = %s"
+
 
         if self.majorFilter != "":
             majorList.append(self.majorFilter + " students only")
+            self.cursor.execute(self.SQL_GetCorrespondingDepartment, (self.majorFilter))
+            department = self.cursor.fetchall()
+            majorList.append(str(department[0][0]) + " students only")
         else:
             majorList = requirementsList
+
 
         if self.yearFilter != "":
             yearList.append(self.yearFilter + " only")
@@ -341,28 +477,82 @@ class masterGUI:
 
 
 
-
+        resultsProject = []
+        results = []
         if self.projCourseSelection.get() == 0:
             self.cursor.execute(self.SQL_ApplyFilterProject, (
             self.title.get(), self.title.get(), majorList, self.majorFilter, yearList, self.yearFilter,
             self.designationFilter, self.designationFilter, self.categoryFilter, self.categoryFilter))
+            resultsProject = self.cursor.fetchall()
         elif self.projCourseSelection.get() == 1:
             self.cursor.execute(self.SQL_ApplyFilterCourse, (
             self.title.get(), self.title.get(), self.designationFilter, self.designationFilter, self.categoryFilter, self.categoryFilter))
+            results = self.cursor.fetchall()
+        else:
+            self.cursor.execute(self.SQL_ApplyFilterProject, (
+            self.title.get(), self.title.get(), majorList, self.majorFilter, yearList, self.yearFilter,
+            self.designationFilter, self.designationFilter, self.categoryFilter, self.categoryFilter))
+            resultsProject = self.cursor.fetchall()
 
-        results = self.cursor.fetchall()
+            self.cursor.execute(self.SQL_ApplyFilterCourse, (
+            self.title.get(), self.title.get(), self.designationFilter, self.designationFilter, self.categoryFilter,
+            self.categoryFilter))
+            results = self.cursor.fetchall()
+
+
+        #results = self.cursor.fetchall()
 
         self.newList = []
         self.currList = []
+        self.finalProjectList = []
+        self.finalCoursesList = []
+        for i in resultsProject:
+            self.finalProjectList.append(i[0])
+        for i in results:
+            self.finalCoursesList.append(i[0])
+
+
+
+
+        self.finalProjectList = set(self.finalProjectList).intersection(currentList)
+        self.finalProjectList = list(self.finalProjectList)
+
+        self.finalCoursesList = set(self.finalCoursesList).intersection(currentListCourse)
+        self.finalCoursesList = list(self.finalCoursesList)
+
+
+
+
 
         if self.projCourseSelection.get() == 0:
-            for row in results:
-                self.currList = list(row)
+            for i in self.finalProjectList:
+                self.currList.append(i)
                 self.currList.append("Project")
                 self.newList.append(tuple(self.currList))
+                self.currList.clear()
+        elif self.projCourseSelection.get() == 1:
+            for row in self.finalCoursesList:
+                self.currList.append(row)
+                self.currList.append("Course")
+                self.newList.append(tuple(self.currList))
+                self.currList.clear()
+        else:
+            for row in self.finalCoursesList:
+                self.currList.append(row)
+                self.currList.append("Course")
+                self.newList.append(tuple(self.currList))
+                self.currList.clear()
+            for row in self.finalProjectList:
+                self.currList.append(row)
+                self.currList.append("Project")
+                self.newList.append(tuple(self.currList))
+                self.currList.clear()
+
 
         for row in self.newList:
             self.table.insert('', 'end', value=row)
+
+        self.newList.clear()
 
         self.table.bind("<Double-1>", self.showItem)
 
@@ -370,11 +560,6 @@ class masterGUI:
         currItem = self.table.focus()
         itemDict = self.table.item(currItem)
         courseInfo = itemDict.get('values')
-
-
-
-
-
 
 
     def showItem(self, event):
@@ -430,9 +615,10 @@ class masterGUI:
                                           " WHERE P.Project_Name = %s"
         self.cursor.execute(self.SQL_GetProjectRequirements, (self.showName))
         self.projectRequirements = self.cursor.fetchall()
+        self.requirementsListApplyProj = []
         for item in self.projectRequirements:
+            self.requirementsListApplyProj.append(item[0])
             projectRequirementsStr += re.sub('[(),\']', '', str(item)) #Regex expression to remove all unwanted chars from the string
-            print(projectRequirementsStr)
             if item != self.projectRequirements[len(self.projectRequirements) - 1]:
                 projectRequirementsStr += ", "
 
@@ -473,6 +659,93 @@ class masterGUI:
         self.backViewProjectBtn = Button(self.smallFrame, text = "Back", command = self.backToMainPageFromViewProject)
         self.backViewProjectBtn.grid(row = 12, column = 2)
 
+        self.applyToProjectBtn = Button(self.smallFrame, text = "Apply", command = self.applyToProject)
+        self.applyToProjectBtn.grid(row = 12, column = 4)
+
+    def applyToProject(self):
+
+        newList = []
+        possibleMajorsList = []
+        possibleYear = ""
+
+        self.SQL_IsDepartment = " SELECT Department_Name" \
+                                " FROM DEPARTMENT" \
+                                " WHERE Department_Name = %s"
+
+        self.SQL_GetMajorsInDept = " SELECT DISTINCT(Major_Name)" \
+                                   " FROM MAJOR" \
+                                   " WHERE Department_Name = %s"
+
+        self.SQL_VerifyMajor = " SELECT *" \
+                               " FROM STUDENT" \
+                               " WHERE Major_Name IN %s AND Username = %s"
+
+        self.SQL_VerifyYear = " SELECT *" \
+                              " FROM STUDENT" \
+                              " WHERE Year = %s AND Username = %s"
+
+        self.SQL_HasAlreadyApplied = " SELECT *" \
+                                     " FROM APPLY" \
+                                     " WHERE Username = %s AND Project_Name = %s"
+
+        self.SQL_UserApply = "INSERT INTO APPLY (Username, Project_Name, Date, Status) VALUES (%s, %s, '2016-12-04', 'Pending')"
+
+        majorVerificationBool = 0
+        yearVerificationBool = 0
+
+
+        for stri in self.requirementsListApplyProj:
+            stri = str(stri)
+            stri = re.sub(' students only', '', stri)
+            stri = re.sub(' only', '', stri)
+            newList.append(stri)
+
+            results = self.cursor.execute(self.SQL_IsDepartment, (stri))
+            print(results)
+
+            if stri == "Freshman" or stri == "Sophomore" or stri == "Junior" or stri == "Senior":
+                possibleYear = stri
+            elif results > 0:
+                self.cursor.execute(self.SQL_GetMajorsInDept, (stri))
+                results = self.cursor.fetchall()
+                for item in results:
+                    possibleMajorsList.append(item[0])
+            else:
+                possibleMajorsList.append(stri)
+
+        if possibleMajorsList != []:
+            print(possibleMajorsList)
+            result = self.cursor.execute(self.SQL_VerifyMajor, (possibleMajorsList, self.userLogin))
+            print(result)
+            if result > 0:
+                majorVerificationBool = 1
+        else:
+            majorVerificationBool = 1
+
+        if possibleYear != "":
+            result2 = self.cursor.execute(self.SQL_VerifyYear, (possibleYear, self.userLogin))
+            if result2 > 0:
+                yearVerificationBool = 1
+        else:
+            yearVerificationBool = 1
+
+        hasApplied = self.cursor.execute(self.SQL_HasAlreadyApplied, (self.userLogin, self.showName))
+        if hasApplied > 0:
+            hasApplied = 0
+        else:
+            hasApplied = 1
+
+
+        if yearVerificationBool and majorVerificationBool and hasApplied:
+            self.cursor.execute(self.SQL_UserApply, (self.userLogin, self.showName))
+        elif hasApplied == 0:
+            messagebox.showwarning("Error", "You have already applied to this project")
+        elif yearVerificationBool == 0:
+            messagebox.showwarning("Error", "You are not the correct year")
+        elif majorVerificationBool == 0:
+            messagebox.showwarning("Error", "Your major cannot apply to this project")
+
+
     def backToMainPageFromViewProject(self):
         self.viewProject.withdraw()
         self.MainPage()
@@ -480,10 +753,10 @@ class masterGUI:
 
     def clearFilter(self):
         self.choiceVar.set("Please Select")
-        self.choiceVarOne.set("Please Select")
         self.choiceVarTwo.set("Please Select")
         self.choiceVarThree.set("Please Select")
         self.title.delete(0, 'end')
+        self.categoriesListBox.delete(0, END)
 
     def openMe(self):
         self.mainPage.withdraw()
@@ -637,15 +910,37 @@ class masterGUI:
 
         self.viewCourse = Toplevel()
 
-        self.bigFrame = Frame(self.applicationPage)
+        self.bigFrame = Frame(self.viewCourse)
         self.bigFrame.grid(row=1, column=0)
         self.smallFrame = Frame(self.bigFrame)
         self.smallFrame.grid(row=0, column=0)
 
 
-        self.SQL_GetCourseSpecs = " SELECT Course_Name, Instructor, Designation_Name, C_Est_Num_Students" \
-                          " FROM COURSE" \
-                          " WHERE Course_Name = %s"
+        self.SQL_GetCourseSpecs = " SELECT Course_Number, Instructor, Designation_Name, C_Est_Num_Students" \
+                                  " FROM COURSE" \
+                                  " WHERE Course_Name = %s"
+
+
+        self.cursor.execute(self.SQL_GetCourseSpecs, (self.showName))
+        results = self.cursor.fetchall()
+
+        csNum = results[0][0]
+
+        self.titleLbViewCourse = Label(self.smallFrame, text=csNum)
+        self.titleLbViewCourse.grid(row=1, column=2)
+
+        self.courseNameLb = Label(self.smallFrame, text = "Course Name: " + self.showName)
+        self.courseNameLb.grid(row = 2, column = 0)
+
+        self.instructorLb = Label(self.smallFrame, text = "Instructor: " + results[0][1])
+        self.instructorLb.grid(row = 3, column = 0)
+
+        self.designationLb = Label(self.smallFrame, text = "Designation: " + results[0][2])
+        self.designationLb.grid(row = 4, column = 0)
+
+        self.estNumLb = Label(self.smallFrame, text = "Estimated number of students: " + str(results[0][3]))
+        self.estNumLb.grid(row = 5, column = 0)
+
 
 
     def backToAdminViewFunct(self):
@@ -722,11 +1017,9 @@ class masterGUI:
 
         self.rejectBtn = Button(self.smallFrame, text = "Reject", command = self.changeStatusToRejected)
         self.rejectBtn.grid(row=10, column=9)
-        
-        print(results)
+
         for row in results:
             self.AppsView.insert('', 'end', value = row)
-            print(row)
             
     def changeStatusToAccepted(self):
         self.Connect()
@@ -735,16 +1028,12 @@ class masterGUI:
         self.SQL_UpdateStatus = "UPDATE APPLY" \
                                 " SET Status = 'Accepted'"\
                                 " WHERE Project_Name = %s AND Username = %s"
-        
-        
-
 
         currentItem = self.AppsView.focus()
         itemDict = self.AppsView.item(currentItem)
         appInfo = itemDict.get("values")
         statusA = appInfo[3]
         userNameA = appInfo[4]
-        print(statusA)
         projectName = appInfo[0]
         if statusA == "Pending":
             self.cursor.execute(self.SQL_UpdateStatus, (projectName, userNameA))
@@ -767,7 +1056,6 @@ class masterGUI:
         appInfo = itemDict.get("values")
         statusA = appInfo[3]
         userNameA = appInfo[4]
-        print(statusA)
         projectName = appInfo[0]
         if statusA == "Pending":
             self.cursor.execute(self.SQL_UpdateStatus, (projectName, userNameA))
@@ -793,7 +1081,6 @@ class masterGUI:
                                               " LIMIT 10"
         self.cursor.execute(self.SQL_PopulateViewPopularProjects)
         results=self.cursor.fetchall()
-        print(results)
 
         self.dataColumns = ["Project","# of Applicants"]
         self.PopProjView = ttk.Treeview(self.smallframe2, columns=self.dataColumns, show = 'headings')

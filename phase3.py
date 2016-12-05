@@ -17,8 +17,6 @@ import random
 # READ: WHEN NAMING GUIS METHODS, USE CAPS AS SO: def ExampleGUI()
 #       WHEN NAMING FUNCTIONS, PLEASE USE CAMEL CASE Ex: fooBar()
 
-
-
 class masterGUI:
     def __init__(self, win):
         # Setup
@@ -892,25 +890,42 @@ class masterGUI:
                                   " FROM COURSE" \
                                   " WHERE Course_Name = %s"
 
+        self.SQL_GetCourseCategories = " SELECT Category_Name" \
+                                       " FROM COURSE_CATEGORY" \
+                                       " WHERE Course_Name = %s"
+
         self.cursor.execute(self.SQL_GetCourseSpecs, (self.showName))
         results = self.cursor.fetchall()
 
         csNum = results[0][0]
+        estNumStudents = str(results[0][3])
+
 
         self.titleLbViewCourse = Label(self.smallFrame, text=csNum)
         self.titleLbViewCourse.grid(row=1, column=2)
 
         self.courseNameLb = Label(self.smallFrame, text="Course Name: " + self.showName)
-        self.courseNameLb.grid(row=2, column=0)
+        self.courseNameLb.grid(row=2, column=0, sticky = W)
 
         self.instructorLb = Label(self.smallFrame, text="Instructor: " + results[0][1])
-        self.instructorLb.grid(row=3, column=0)
+        self.instructorLb.grid(row=3, column=0, sticky = W)
 
         self.designationLb = Label(self.smallFrame, text="Designation: " + results[0][2])
-        self.designationLb.grid(row=4, column=0)
+        self.designationLb.grid(row=4, column=0, sticky = W)
 
-        self.estNumLb = Label(self.smallFrame, text="Estimated number of students: " + str(results[0][3]))
-        self.estNumLb.grid(row=5, column=0)
+        self.cursor.execute(self.SQL_GetCourseCategories, (self.showName))
+        self.courseCategoriesList = self.cursor.fetchall()
+        courseCategoriesListStr = ""
+        for item in self.courseCategoriesList:
+            courseCategoriesListStr += re.sub('[(),\']', '', str(item))
+            if item != self.courseCategoriesList[len(self.courseCategoriesList) - 1]:
+                courseCategoriesListStr += ", "
+
+        self.courseCategoriesLb = Label(self.smallFrame, text = "Categories: " + courseCategoriesListStr)
+        self.courseCategoriesLb.grid(row = 5, column = 0, sticky = W)
+
+        self.estNumLb = Label(self.smallFrame, text="Estimated number of students: " + estNumStudents)
+        self.estNumLb.grid(row=6, column=0, sticky = W)
 
     def backToAdminViewFunct(self):
         self.viewApplication.withdraw()
